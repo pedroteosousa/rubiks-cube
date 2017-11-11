@@ -1,0 +1,18 @@
+{
+  "name": "Cube",
+  "version": "1.0.0",
+  "description": "Simple JavaScript modeling of a 3x3x3 Rubik's Cube.",
+  "main": "cube.js",
+  "scripts": {
+    "test": "node test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pedroteosousa/cube.git"
+  },
+  "author": "Pedro Sousa <pedroteosousa@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/pedroteosousa/cube/issues"
+  }
+}
