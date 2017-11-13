@@ -1,3 +1,5 @@
+"use strict";
+
 class Cube {
 	// Creates a solved cube at WCA scrambling orientation
 	constructor(other) {
@@ -179,11 +181,22 @@ class Cube {
 			this.move(moves[i])
 		}
 	}
+	// Hash function to comparece cubes
+	hash() {
+		var str = ""
+		for (var i in this.ep) {
+			str += String.fromCharCode(this.ep[i]+48)
+			str += String.fromCharCode(this.eo[i]+48)
+		}
+		for (var i in this.cp) {
+			str += String.fromCharCode(this.cp[i]+48)
+			str += String.fromCharCode(this.co[i]+48)
+		}
+		for (var i in this.c) {
+			str += String.fromCharCode(this.c[i]+48)
+		}
+		return str;
+	}
 }
 
-var cube = new Cube ()
-cube.scramble("D' R' F L' D2 F U' D' L U' F R2 B' D2 F' R2 U2 B' D2 R2 B")
-console.log(cube)
-var c = new Cube (cube)
-c.scramble("y2 R2 U F' Rw' U2 L U' L' U M U M' U2 L' B' L M' Rw U' R' U R' U2 R U R' U R U M' U2 M' U2 M U M U M' U2 M U' M2 U' M U2 M U2 M2 U2 R2 y2 x'")
-console.log(c)
+module.exports = Cube
