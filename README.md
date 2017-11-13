@@ -4,6 +4,13 @@ Simple JavaScript modeling of a 3x3x3 Rubik's Cube.
 
 ### Usage
 
+You can install the package with
+```{r, engine='bash', count_lines}
+npm install rubiks-cube
+```
+
+Here is a small use example
+
 ```javascript
 const Cube = require('rubiks-cube')
 
