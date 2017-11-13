@@ -1,4 +1,5 @@
 # Rubiks Cube
+[![npm version](https://badge.fury.io/js/rubiks-cube.svg)](https://badge.fury.io/js/rubiks-cube)
 
 Simple JavaScript modeling of a 3x3x3 Rubik's Cube.
 
@@ -22,6 +23,6 @@ var copy = new Cube(cube) // or use the copy constructor
 cube.scramble("U2 M2 U2 M' U2 M2 U2 M'")
 copy.scramble("M S2 M' S2")
 
-// Compare the cubes using hash()
+// Compare cubes using hash()
 console.log(cube.hash() == copy.hash()) // true
 ```

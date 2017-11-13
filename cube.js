@@ -3,18 +3,29 @@
 class Cube {
 	// Creates a solved cube at WCA scrambling orientation
 	constructor(other) {
-		if (other == undefined) {
-			this.ep = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
-			this.eo = (new Array (12)).fill(0)
-			this.cp = [0, 1, 2, 3, 4, 5, 6, 7]
-			this.co = (new Array (8)).fill(0)
-			this.c = [0, 1, 2, 3, 4, 5]
-		} else {
+		this.ep = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+		this.eo = (new Array (12)).fill(0)
+		this.cp = [0, 1, 2, 3, 4, 5, 6, 7]
+		this.co = (new Array (8)).fill(0)
+		this.c = [0, 1, 2, 3, 4, 5]
+		if (typeof other !== "string" && other != undefined) {
 			this.ep = other.ep.slice()
 			this.eo = other.eo.slice()
 			this.cp = other.cp.slice()
 			this.co = other.co.slice()
 			this.c = other.c.slice()
+		} else if (typeof other === "string" && other != undefined) {
+			for (var i = 0; i < 12; i++) {
+				this.ep[i] = other.charCodeAt(2*i) - 48
+				this.eo[i] = other.charCodeAt(2*i+1) - 48
+			}
+			for (var i = 12; i < 20; i++) {
+				this.cp[i-12] = other.charCodeAt(2*i) - 48
+				this.co[i-12] = other.charCodeAt(2*i+1) - 48
+			}
+			for (var i = 2*20; i < 46; i++) {
+				this.c[i - 2*20] = other.charCodeAt(i) - 48
+			}
 		}
 	}
 	// List of moves given by cicles and/or sequences of other moves
@@ -76,11 +87,11 @@ class Cube {
 				"edges" : [[1, 9, 11, 3], [1, 1, 1, 1]],
 				"centers" : [0, 3, 5, 1]
 			},
-			"E" : {
+			"E'" : {
 				"edges" : [[7, 6, 5, 4], [1, 1, 1, 1]],
 				"centers" : [4, 3, 2, 1]
 			},
-			"E'" : {
+			"E" : {
 				"edges" : [[7, 4, 5, 6], [1, 1, 1, 1]],
 				"centers" : [4, 1, 2, 3]
 			},
@@ -180,6 +191,30 @@ class Cube {
 		for (var i in moves) {
 			this.move(moves[i])
 		}
+	}
+	// Rotate cube to the default orientation
+	orient() {
+		var moveWhite = ["", "z", "x", "z'", "x'", "x2"]
+		for (var i in this.c) {
+			if (this.c[i] == 0) {
+				this.scramble(moveWhite[i])
+				break;
+			}
+		}
+		var moveGreen = ["", "y'", "", "y", "y2", ""]
+		for (var i in this.c) {
+			if (this.c[i] == 2) {
+				this.scramble(moveGreen[i])
+				break;
+			}
+		}
+	}
+	// Check if cube is solved
+	isSolved() {
+		var solved = new Cube ()
+		var oriented = new Cube (this)
+		oriented.orient()
+		return (oriented.hash() == solved.hash())
 	}
 	// Hash function to comparece cubes
 	hash() {
