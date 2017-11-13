@@ -229,7 +229,7 @@ class Cube {
 				str += String.fromCharCode(this.eo[i]+48)
 			} else {
 				str += String.fromCharCode(47)
-				if (positions != undefined && positions[1] != undefined && positions[1].indexOf(i) >= 0)
+				if (positions != undefined && positions[1] != undefined && positions[1].indexOf(parseInt(i)) >= 0)
 					str += String.fromCharCode(this.eo[i]+48)
 			}
 		}
@@ -239,7 +239,7 @@ class Cube {
 				str += String.fromCharCode(this.co[i]+48)
 			} else {
 				str += String.fromCharCode(47)
-				if (positions != undefined && positions[0] != undefined && positions[0].indexOf(i) >= 0)
+				if (positions != undefined && positions[0] != undefined && positions[0].indexOf(parseInt(i)) >= 0)
 					str += String.fromCharCode(this.co[i]+48)
 			}
 		}
