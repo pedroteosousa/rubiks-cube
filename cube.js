@@ -1,4 +1,4 @@
-"use strict";
+"use strict"
 
 class Cube {
 	// Creates a solved cube at WCA scrambling orientation
@@ -198,14 +198,14 @@ class Cube {
 		for (var i in this.c) {
 			if (this.c[i] == 0) {
 				this.scramble(moveWhite[i])
-				break;
+				break
 			}
 		}
 		var moveGreen = ["", "y'", "", "y", "y2", ""]
 		for (var i in this.c) {
 			if (this.c[i] == 2) {
 				this.scramble(moveGreen[i])
-				break;
+				break
 			}
 		}
 	}
@@ -217,20 +217,41 @@ class Cube {
 		return (oriented.hash() == solved.hash())
 	}
 	// Hash function to comparece cubes
-	hash() {
+	hash(pieces, positions) {
 		var str = ""
+
+		if (pieces == undefined && positions == undefined) {
+			pieces = [[0, 1, 2, 3, 4, 5, 6, 7], [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], [0, 1, 2, 3, 4, 5]]
+		}
 		for (var i in this.ep) {
-			str += String.fromCharCode(this.ep[i]+48)
-			str += String.fromCharCode(this.eo[i]+48)
+			if (pieces[1] != undefined && pieces[1].indexOf(this.ep[i]) >= 0) {
+				str += String.fromCharCode(this.ep[i]+48)
+				str += String.fromCharCode(this.eo[i]+48)
+			} else {
+				str += String.fromCharCode(47)
+				if (positions != undefined && positions[1] != undefined && positions[1].indexOf(i) >= 0)
+					str += String.fromCharCode(this.eo[i]+48)
+			}
 		}
 		for (var i in this.cp) {
-			str += String.fromCharCode(this.cp[i]+48)
-			str += String.fromCharCode(this.co[i]+48)
+			if (pieces[0] != undefined && pieces[0].indexOf(this.cp[i]) >= 0) {
+				str += String.fromCharCode(this.cp[i]+48)
+				str += String.fromCharCode(this.co[i]+48)
+			} else {
+				str += String.fromCharCode(47)
+				if (positions != undefined && positions[0] != undefined && positions[0].indexOf(i) >= 0)
+					str += String.fromCharCode(this.co[i]+48)
+			}
 		}
 		for (var i in this.c) {
-			str += String.fromCharCode(this.c[i]+48)
+			if (pieces[2] != undefined && pieces[2].indexOf(this.c[i]) >= 0) {
+				str += String.fromCharCode(this.c[i]+48)
+			} else {
+				str += String.fromCharCode(47)
+			}
 		}
-		return str;
+
+		return str
 	}
 }
 
