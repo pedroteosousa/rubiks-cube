@@ -16,6 +16,5 @@
     "url": "https://github.com/pedroteosousa/rubiks-cube/issues"
   },
   "dependencies": {
-    "fs": "0.0.1-security"
   }
 }
