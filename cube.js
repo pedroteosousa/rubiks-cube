@@ -1,4 +1,10 @@
+const Moves = require('./moves')
+
 "use strict"
+
+var randomInt = (max) => {
+	return Math.floor(Math.random() * (max + 1));
+}
 
 class Cube {
 	// Creates a solved cube at WCA scrambling orientation
@@ -8,13 +14,13 @@ class Cube {
 		this.cp = [0, 1, 2, 3, 4, 5, 6, 7]
 		this.co = (new Array (8)).fill(0)
 		this.c = [0, 1, 2, 3, 4, 5]
-		if (typeof other !== "string" && other != undefined) {
+		if (other != undefined && typeof other !== "string") {
 			this.ep = other.ep.slice()
 			this.eo = other.eo.slice()
 			this.cp = other.cp.slice()
 			this.co = other.co.slice()
 			this.c = other.c.slice()
-		} else if (typeof other === "string" && other != undefined) {
+		} else if (other != undefined && typeof other === "string") {
 			for (var i = 0; i < 12; i++) {
 				this.ep[i] = other.charCodeAt(2*i) - 48
 				this.eo[i] = other.charCodeAt(2*i+1) - 48
@@ -28,118 +34,108 @@ class Cube {
 			}
 		}
 	}
+	// Coordinate data to Cubie data
+	static coordinateToCubie(data) {
+		var orientation = (ori_data, num_pieces, flip_size) => {
+			var ori = []
+			var sum = 0
+			for (var i = 0; i < num_pieces-1; i++) {
+				ori.push(ori_data%flip_size)
+				sum += ori[i]
+				ori_data = Math.floor(ori_data/flip_size)
+			}
+			ori.push((flip_size - sum%flip_size)%flip_size)
+			return ori
+		}
+		var permutation = (per_data, num_pieces) => {
+			var per = []
+			var temp_info = []
+
+			var extract = []
+			for (var i=1; i <= num_pieces; i++) {
+				temp_info.push(num_pieces - i)
+				extract.push(per_data%i)
+				per_data = Math.floor(per_data / i)
+			}
+
+			for (var i=num_pieces-1; i >= 0; i--) {
+				per.push(temp_info.splice(extract[i], 1)[0])
+			}
+			per.reverse()
+
+			return per
+		}
+		return {
+			co: orientation(data.co, 8, 3),
+			eo: orientation(data.eo, 12, 2),
+			cp: permutation(data.cp, 8),
+			ep: permutation(data.ep, 12)
+		}
+	}
+	// Cubie data to Coordinate data
+	static cubieToCoordinate(data) {
+		var orientation = (ori_data, flip_size) => {
+			var final_data = 0
+			for (var i = ori_data.length-2; i >= 0; i--) {
+				final_data *= flip_size 
+				final_data += ori_data[i];
+			}
+			return final_data
+		}
+		var permutation = (per_data) => {
+			var final_data = 0
+			for (var i = per_data.length-1; i >= 1; i--) {
+				var sum = 0
+				for (var j=0; j < i; j++) {
+					if (per_data[j] > per_data[i]) sum++
+				}
+				final_data += sum;
+				final_data *= i
+			}
+			return final_data
+		}
+		return {
+			co: orientation(data.co, 3),
+			eo: orientation(data.eo, 2),
+			cp: permutation(data.cp),
+			ep: permutation(data.ep)
+		}
+	}
+	// Create a random cube state
+	static random() {
+		var verifyParity = (cp, ep) => {
+			var getSum = (data, num_pieces) => {
+				var sum = 0
+				for (var i=1; i <= num_pieces; i++) {
+					sum += data%i
+					data = Math.floor(data / i)
+				}
+				return sum;
+			}
+			return (getSum(cp, 8)%2) == (getSum(ep, 12)%2)
+		}
+
+		do {
+			var cube = new Cube ();
+
+			var data = {}
+			data.co = randomInt(2186)
+			data.eo = randomInt(2047)
+			data.cp = randomInt(40319)
+			data.ep = randomInt(479001599)	
+			var cubie_data = Cube.coordinateToCubie(data)
+
+			cube.co = cubie_data.co
+			cube.eo = cubie_data.eo
+			cube.cp = cubie_data.cp
+			cube.ep = cubie_data.ep 
+
+		} while (!verifyParity(data.cp, data.ep));
+		return cube;
+	}
 	// List of moves given by cicles and/or sequences of other moves
 	static moves() {
-		return {
-			"U" : {
-				"corners" : [[0, 1, 2, 3], [0, 0, 0, 0]],
-				"edges" : [[0, 1, 2, 3], [0, 0, 0, 0]]
-			},
-			"U'" : {
-				"corners" : [[0, 3, 2, 1], [0, 0, 0, 0]],
-				"edges" : [[0, 3, 2, 1], [0, 0, 0, 0]]
-			},
-			"D" : {
-				"corners" : [[4, 5, 6, 7], [0, 0, 0, 0]],
-				"edges" : [[8, 9, 10, 11], [0, 0, 0, 0]]
-			},
-			"D'" : {
-				"corners" : [[4, 7, 6, 5], [0, 0, 0, 0]],
-				"edges" : [[8, 11, 10, 9], [0, 0, 0, 0]]
-			},
-			"L" : {
-				"corners" : [[0, 3, 4, 7], [1, 2, 1, 2]],
-				"edges" : [[3, 5, 11, 4], [0, 0, 0, 0]]
-			},
-			"L'" : {
-				"corners" : [[0, 7, 4, 3], [1, 2, 1, 2]],
-				"edges" : [[3, 4, 11, 5], [0, 0, 0, 0]]
-			},
-			"R" : {
-				"corners" : [[2, 1, 6, 5], [1, 2, 1, 2]],
-				"edges" : [[1, 7, 9, 6], [0, 0, 0, 0]]
-			},
-			"R'" : {
-				"corners" : [[2, 5, 6, 1], [1, 2, 1, 2]],
-				"edges" : [[1, 6, 9, 7], [0, 0, 0, 0]]
-			},
-			"F" : {
-				"corners" : [[3, 2, 5, 4], [1, 2, 1, 2]],
-				"edges" : [[2, 6, 8, 5], [1, 1, 1, 1]]
-			},
-			"F'" : {
-				"corners" : [[3, 4, 5, 2], [1, 2, 1, 2]],
-				"edges" : [[2, 5, 8, 6], [1, 1, 1, 1]]
-			},
-			"B" : {
-				"corners" : [[1, 0, 7, 6], [1, 2, 1, 2]],
-				"edges" : [[0, 4, 10, 7], [1, 1, 1, 1]]
-			},
-			"B'" : {
-				"corners" : [[1, 6, 7, 0], [1, 2, 1, 2]],
-				"edges" : [[0, 7, 10, 4], [1, 1, 1, 1]]
-			},
-			"S" : {
-				"edges" : [[1, 3, 11, 9], [1, 1, 1, 1]],
-				"centers" : [0, 1, 5, 3]
-			},
-			"S'" : {
-				"edges" : [[1, 9, 11, 3], [1, 1, 1, 1]],
-				"centers" : [0, 3, 5, 1]
-			},
-			"E'" : {
-				"edges" : [[7, 6, 5, 4], [1, 1, 1, 1]],
-				"centers" : [4, 3, 2, 1]
-			},
-			"E" : {
-				"edges" : [[7, 4, 5, 6], [1, 1, 1, 1]],
-				"centers" : [4, 1, 2, 3]
-			},
-			"M" : {
-				"edges" : [[0, 2, 8, 10], [1, 1, 1, 1]],
-				"centers" : [0, 2, 5, 4]
-			},
-			"M'" : {
-				"edges" : [[0, 10, 8, 2], [1, 1, 1, 1]],
-				"centers" : [0, 4, 5, 2]
-			},
-			"Rw" : {"sequence" : "R M'"},
-			"Rw'" : {"sequence" : "R' M"},
-			"Rw2" : {"sequence" : "R2 M2"},
-			"Lw" : {"sequence" : "L M"},
-			"Lw'" : {"sequence" : "L' M'"},
-			"Lw2" : {"sequence" : "L2 M2"},
-			"Fw" : {"sequence" : "F S'"},
-			"Fw'" : {"sequence" : "F' S"},
-			"Fw2" : {"sequence" : "F2 S2"},
-			"Bw" : {"sequence" : "B S"},
-			"Bw'" : {"sequence" : "B' S'"},
-			"Bw2" : {"sequence" : "B2 S2"},
-			"Uw" : {"sequence" : "U E'"},
-			"Uw'" : {"sequence" : "U' E"},
-			"Uw2" : {"sequence" : "U2 E2"},
-			"Dw" : {"sequence" : "D E"},
-			"Dw'" : {"sequence" : "D' E'"},
-			"Dw2" : {"sequence" : "D2 E2"},
-			"E2" : {"sequence" : "E E"},
-			"S2" : {"sequence" : "S S"},
-			"M2" : {"sequence" : "M M"},
-			"L2" : {"sequence" : "L L"},
-			"R2" : {"sequence" : "R R"},
-			"U2" : {"sequence" : "U U"},
-			"D2" : {"sequence" : "D D"},
-			"F2" : {"sequence" : "F F"},
-			"B2" : {"sequence" : "B B"},
-			"x" : {"sequence" : "L' M' R"},
-			"x'" : {"sequence" : "L M R'"},
-			"x2" : {"sequence" : "L2 M2 R2"},
-			"y" : {"sequence" : "U E' D'"},
-			"y'" : {"sequence" : "U' E D"},
-			"y2" : {"sequence" : "U2 E2 D2"},
-			"z" : {"sequence" : "F S' B'"},
-			"z'" : {"sequence" : "F' S B"},
-			"z2" : {"sequence" : "F2 S2 B2"}
-		}
+		return Moves.moves()
 	}
 	// Make a move from the list of moves	
 	move(m) {
@@ -216,37 +212,46 @@ class Cube {
 		oriented.orient()
 		return (oriented.hash() == solved.hash())
 	}
-	// Hash function to comparece cubes
-	hash(pieces, positions) {
+	/* Hash function to comparece cubes
+		affected_pieces:
+			an array of arrays [corners, edges, centers], that represent the pieces for which
+			bot ORIENTATION AND PERMUTATION are supposed to be considered in the hash function
+		affected_positions:
+			an array of arrays [corners, edges], that represent the positions in the
+			cube in which the ORIENTATION is supposed to be considered in the hash function
+		
+		if both arguments are missing, then affected_pieces, by default, is the whole cube
+	*/
+	hash(affected_pieces, affected_positions) {
 		var str = ""
 
-		if (pieces == undefined && positions == undefined) {
-			pieces = [[0, 1, 2, 3, 4, 5, 6, 7], [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], [0, 1, 2, 3, 4, 5]]
+		if (affected_pieces == undefined && affected_positions == undefined) {
+			affected_pieces = [[0, 1, 2, 3, 4, 5, 6, 7], [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], [0, 1, 2, 3, 4, 5]]
 		}
 		for (var i in this.ep) {
-			if (pieces[1] != undefined && pieces[1].indexOf(this.ep[i]) >= 0) {
+			if (affected_pieces[1] != undefined && affected_pieces[1].indexOf(this.ep[i]) >= 0) {
 				str += String.fromCharCode(this.ep[i]+48)
 				str += String.fromCharCode(this.eo[i]+48)
 			} else {
 				str += String.fromCharCode(47)
-				if (positions != undefined && positions[1] != undefined && positions[1].indexOf(parseInt(i)) >= 0)
+				if (affected_positions != undefined && affected_positions[1] != undefined && affected_positions[1].indexOf(parseInt(i)) >= 0)
 					str += String.fromCharCode(this.eo[i]+48)
 				else str += String.fromCharCode(47)
 			}
 		}
 		for (var i in this.cp) {
-			if (pieces[0] != undefined && pieces[0].indexOf(this.cp[i]) >= 0) {
+			if (affected_pieces[0] != undefined && affected_pieces[0].indexOf(this.cp[i]) >= 0) {
 				str += String.fromCharCode(this.cp[i]+48)
 				str += String.fromCharCode(this.co[i]+48)
 			} else {
 				str += String.fromCharCode(47)
-				if (positions != undefined && positions[0] != undefined && positions[0].indexOf(parseInt(i)) >= 0)
+				if (affected_positions != undefined && affected_positions[0] != undefined && affected_positions[0].indexOf(parseInt(i)) >= 0)
 					str += String.fromCharCode(this.co[i]+48)
 				else str += String.fromCharCode(47)
 			}
 		}
 		for (var i in this.c) {
-			if (pieces[2] != undefined && pieces[2].indexOf(this.c[i]) >= 0) {
+			if (affected_pieces[2] != undefined && affected_pieces[2].indexOf(this.c[i]) >= 0) {
 				str += String.fromCharCode(this.c[i]+48)
 			} else {
 				str += String.fromCharCode(47)

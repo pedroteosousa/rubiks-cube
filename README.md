@@ -25,4 +25,7 @@ copy.scramble("M S2 M' S2")
 
 // Compare cubes using hash()
 console.log(cube.hash() == copy.hash()) // true
+
+// Create a cube in a random state
+var random = Cube.random()
 ```
