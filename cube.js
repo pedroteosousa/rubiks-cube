@@ -9,12 +9,14 @@ var randomInt = (max) => {
 class Cube {
 	// Creates a solved cube at WCA scrambling orientation
 	constructor(other) {
-		this.ep = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
-		this.eo = (new Array (12)).fill(0)
-		this.cp = [0, 1, 2, 3, 4, 5, 6, 7]
-		this.co = (new Array (8)).fill(0)
-		this.c = [0, 1, 2, 3, 4, 5]
-		if (other != undefined && typeof other !== "string") {
+		var identity = {ep: 0, eo: 0, cp: 0, co: 0, c: 0}
+		var cubie = Cube.coordinateToCubie(identity)
+		this.co = cubie.co
+		this.cp = cubie.cp
+		this.ep = cubie.ep
+		this.eo = cubie.eo
+		this.c = cubie.c
+		if (other != undefined && other.hasOwnProperty('co')) {
 			this.ep = other.ep.slice()
 			this.eo = other.eo.slice()
 			this.cp = other.cp.slice()
@@ -69,7 +71,8 @@ class Cube {
 			co: orientation(data.co, 8, 3),
 			eo: orientation(data.eo, 12, 2),
 			cp: permutation(data.cp, 8),
-			ep: permutation(data.ep, 12)
+			ep: permutation(data.ep, 12),
+			c: permutation(data.c, 6)
 		}
 	}
 	// Cubie data to Coordinate data
@@ -77,8 +80,8 @@ class Cube {
 		var orientation = (ori_data, flip_size) => {
 			var final_data = 0
 			for (var i = ori_data.length-2; i >= 0; i--) {
-				final_data *= flip_size 
-				final_data += ori_data[i];
+				final_data *= flip_size
+				final_data += ori_data[i]
 			}
 			return final_data
 		}
@@ -89,7 +92,7 @@ class Cube {
 				for (var j=0; j < i; j++) {
 					if (per_data[j] > per_data[i]) sum++
 				}
-				final_data += sum;
+				final_data += sum
 				final_data *= i
 			}
 			return final_data
@@ -98,7 +101,8 @@ class Cube {
 			co: orientation(data.co, 3),
 			eo: orientation(data.eo, 2),
 			cp: permutation(data.cp),
-			ep: permutation(data.ep)
+			ep: permutation(data.ep),
+			c: permutation(data.c)
 		}
 	}
 	// Create a random cube state
@@ -115,23 +119,20 @@ class Cube {
 			return (getSum(cp, 8)%2) == (getSum(ep, 12)%2)
 		}
 
+		var data
 		do {
 			var cube = new Cube ();
 
-			var data = {}
-			data.co = randomInt(2186)
-			data.eo = randomInt(2047)
-			data.cp = randomInt(40319)
-			data.ep = randomInt(479001599)	
-			var cubie_data = Cube.coordinateToCubie(data)
-
-			cube.co = cubie_data.co
-			cube.eo = cubie_data.eo
-			cube.cp = cubie_data.cp
-			cube.ep = cubie_data.ep 
-
+			data = {
+				co: randomInt(2186),
+				eo: randomInt(2047),
+				cp: randomInt(40319),
+				ep: randomInt(479001599),
+				c: 0
+			}
 		} while (!verifyParity(data.cp, data.ep));
-		return cube;
+
+		return new Cube (Cube.coordinateToCubie(data));
 	}
 	// List of moves given by cicles and/or sequences of other moves
 	static moves() {
@@ -140,16 +141,18 @@ class Cube {
 	// Make a move from the list of moves	
 	move(m) {
 		var moveInfo = Cube.moves()[m]
-		var t, pieceInfo
+		var pieceInfo
 
 		if (moveInfo == undefined) return
+
 		// === Sequence ===
-		if (moveInfo.sequence != undefined) {
+		if (moveInfo.hasOwnProperty('sequence')) {
 			this.scramble(moveInfo.sequence)
 		}
+
 		// === Corners ===
-		if (moveInfo.corners != undefined) {
-			t = moveInfo.corners[0][0]
+		if (moveInfo.hasOwnProperty('corners')) {
+			var t = moveInfo.corners[0][0]
 			pieceInfo = [this.cp[t], this.co[t]]
 			for (var i = 3; i > 0; i--) {
 				this.cp[moveInfo.corners[0][(i+1)%4]] = this.cp[moveInfo.corners[0][i]]
@@ -160,8 +163,8 @@ class Cube {
 		}
 
 		// === Edges ===
-		if (moveInfo.edges != undefined) {
-			t = moveInfo.edges[0][0]
+		if (moveInfo.hasOwnProperty('edges')) {
+			var t = moveInfo.edges[0][0]
 			pieceInfo = [this.ep[t], this.eo[t]]
 			for (var i = 3; i > 0; i--) {
 				this.ep[moveInfo.edges[0][(i+1)%4]] = this.ep[moveInfo.edges[0][i]]
@@ -172,8 +175,8 @@ class Cube {
 		}
 
 		// === Centers ===
-		if (moveInfo.centers != undefined) {
-			t = moveInfo.centers[0]
+		if (moveInfo.hasOwnProperty('centers')) {
+			var t = moveInfo.centers[0]
 			pieceInfo = this.c[t]
 			for (var i = 3; i > 0; i--) {
 				this.c[moveInfo.centers[(i+1)%4]] = this.c[moveInfo.centers[i]]
@@ -183,10 +186,8 @@ class Cube {
 	}
 	// Make all moves in a scramble string
 	scramble(s) {
-		var moves = s.split(' ')
-		for (var i in moves) {
-			this.move(moves[i])
-		}
+		var moves = s.split(' ').filter((m) => m.length > 0)
+		for (var i in moves) this.move(moves[i])
 	}
 	// Rotate cube to the default orientation
 	orient() {
