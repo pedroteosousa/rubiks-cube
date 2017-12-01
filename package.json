@@ -1,13 +1,18 @@
 {
   "name": "rubiks-cube",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "Simple JavaScript modeling of a 3x3x3 Rubik's Cube.",
   "main": "cube.js",
   "scripts": {
     "test": "mocha || true"
   },
   "keywords": [
-    "rubiks", "cube", "3x3x3", "random", "state", "generator"
+    "rubiks",
+    "cube",
+    "3x3x3",
+    "random",
+    "state",
+    "generator"
   ],
   "repository": {
     "type": "git",
