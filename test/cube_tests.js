@@ -9,15 +9,15 @@ describe('Tests for cube.js', function () {
 			assert.deepEqual(random, cube, 'copy constructor not working')
 			cube = new Cube (random.hash())
 			assert.deepEqual(random, cube, 'hash function constructor not working')
-			//cube = new Cube (Cube.cubieToCoordinate(random))
-			//assert.deepEqual(random, cube, 'coordinate constructor not working')
+			cube = new Cube (random)
+			assert.deepEqual(random, cube, 'coordinate constructor not working')
 		}
 	})
 	it('Testing cubie and coordinate functions', function () {
 		for (var i = 0; i < 20; i++) {
 			var random = Cube.random()
-			var cubie = Cube.coordinateToCubie(Cube.cubieToCoordinate(random))
-			assert.deepEqual(cubie, random, "cubes did not match")	
+			var coordinates = Cube.cubieToCoordinate(Cube.coordinateToCubie(random))
+			assert.deepEqual(coordinates, random, "cubes did not match")	
 		}
 	})
 	it('Testing moves and simple hash function', function () {
@@ -33,18 +33,17 @@ describe('Tests for cube.js', function () {
 			var cube = new Cube ()
 			cube.scramble(tests[i].scramble + tests[i].solve)
 			cube.orient()
-			assert.equal(cube.hash(), identity.hash(), "test " + i + ", scramble + solve")
+			assert.equal(cube.hash(), identity.hash(), "test " + i + ": scramble + solve")
 			cube.scramble(tests[i].inverse + tests[i].scramble)
-			assert.equal(cube.isSolved(), true, "test " + i + ", inverse + scramble")
+			assert.equal(cube.isSolved(), true, "test " + i + ": inverse + scramble")
 		}
 	})
 	it('Testing parity', function () {
 		var getParity = (data, num_pieces) => {
 			var sum = 0
 			for (var i=1; i <= num_pieces; i++) {
-				for (var j = 0; j < i; j++) {
-					if (data[j] > data[i]) sum++;
-				}
+				sum += data%i
+				data = Math.floor(data / i)
 			}
 			return sum%2;
 		}
