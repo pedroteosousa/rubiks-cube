@@ -24,6 +24,9 @@ var copy = new Cube(cube) // or use the copy constructor
 cube.scramble("U2 M2 U2 M' U2 M2 U2 M'")
 copy.scramble("M S2 M' S2")
 
+// Check if cube is solved
+cube.isSolved() // false
+
 // Compare cubes using hash()
 console.log(cube.hash() == copy.hash()) // true
 
