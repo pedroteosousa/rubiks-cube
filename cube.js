@@ -5,54 +5,45 @@ const Moves = require('./moves')
 class Cube {
 	// Creates a solved cube at WCA scrambling orientation
 	constructor(other) {
-		// Apply coordinates to this cube
-		var apply = (coordinates) => {
-			this.co = coordinates.co
-			this.cp = coordinates.cp
-			this.ep = coordinates.ep
-			this.eo = coordinates.eo
-			this.c = coordinates.c		
+		// Apply cubie to this cube
+		var apply = (cubie) => {
+			this.co = cubie.co.slice()
+			this.cp = cubie.cp.slice()
+			this.ep = cubie.ep.slice()
+			this.eo = cubie.eo.slice()
+			this.c = cubie.c.slice()
 		}
 		// Identity Cube
-		var identity = {ep: 0, eo: 0, cp: 0, co: 0, c: 0}
-		
+		var identity = Cube.coordinateToCubie({ep: 0, eo: 0, cp: 0, co: 0, c: 0})
 		// Constructor without arguments creates the identity cube
-		if (other == undefined) {
-			apply(identity)
-		}
+		apply(identity)
+
 		// Get cube info from coordinate or from cubie objects
-		else if (other != undefined && other.hasOwnProperty('co')) {
+		if (other != undefined && other.hasOwnProperty('co')) {
 			if (typeof other.co === "number") {
-				apply(other) 
+				apply(Cube.coordinateToCubie(other)) 
 			} else {
-				apply(Cube.cubieToCoordinate(other))
+				apply(other)
 			}
 		}
 		// Get cube info from hash function (only use this if hash functions affects all pieces)
 		else if (other != undefined && typeof other === "string") {
-			var cubie = Cube.coordinateToCubie(identity)
 			for (var i = 0; i < 12; i++) {
-				cubie.ep[i] = other.charCodeAt(2*i) - 48
-				cubie.eo[i] = other.charCodeAt(2*i+1) - 48
+				this.ep[i] = other.charCodeAt(2*i) - 48
+				this.eo[i] = other.charCodeAt(2*i+1) - 48
 			}
 			for (var i = 12; i < 20; i++) {
-				cubie.cp[i-12] = other.charCodeAt(2*i) - 48
-				cubie.co[i-12] = other.charCodeAt(2*i+1) - 48
+				this.cp[i-12] = other.charCodeAt(2*i) - 48
+				this.co[i-12] = other.charCodeAt(2*i+1) - 48
 			}
 			for (var i = 2*20; i < 46; i++) {
-				cubie.c[i - 2*20] = other.charCodeAt(i) - 48
+				this.c[i - 2*20] = other.charCodeAt(i) - 48
 			}
-			apply(Cube.cubieToCoordinate(cubie))
 		}
 	}
-	// Apply cubie to object
-	applyCubie(cubie) {
-		var coordinates = Cube.cubieToCoordinate(cubie)
-		this.ep = coordinates.ep
-		this.eo = coordinates.eo
-		this.co = coordinates.co
-		this.cp = coordinates.cp
-		this.c = coordinates.c
+	static identity() {
+		var identity = new Cube ()
+		return identity
 	}
 	// Coordinate data to Cubie data
 	static coordinateToCubie(data) {
@@ -175,64 +166,73 @@ class Cube {
 			this.scramble(moveInfo.sequence)
 		}
 
-		var cubie = Cube.coordinateToCubie(this)
-
 		// === Corners ===
 		if (moveInfo.hasOwnProperty('corners')) {
 			var t = moveInfo.corners[0][0]
-			pieceInfo = [cubie.cp[t], cubie.co[t]]
+			pieceInfo = [this.cp[t], this.co[t]]
 			for (var i = 3; i > 0; i--) {
-				cubie.cp[moveInfo.corners[0][(i+1)%4]] = cubie.cp[moveInfo.corners[0][i]]
-				cubie.co[moveInfo.corners[0][(i+1)%4]] = (cubie.co[moveInfo.corners[0][i]]+moveInfo.corners[1][i])%3
+				this.cp[moveInfo.corners[0][(i+1)%4]] = this.cp[moveInfo.corners[0][i]]
+				this.co[moveInfo.corners[0][(i+1)%4]] = (this.co[moveInfo.corners[0][i]]+moveInfo.corners[1][i])%3
 			}
-			cubie.cp[moveInfo.corners[0][1]] = pieceInfo[0]
-			cubie.co[moveInfo.corners[0][1]] = (pieceInfo[1]+moveInfo.corners[1][0])%3
+			this.cp[moveInfo.corners[0][1]] = pieceInfo[0]
+			this.co[moveInfo.corners[0][1]] = (pieceInfo[1]+moveInfo.corners[1][0])%3
 		}
 
 		// === Edges ===
 		if (moveInfo.hasOwnProperty('edges')) {
 			var t = moveInfo.edges[0][0]
-			pieceInfo = [cubie.ep[t], cubie.eo[t]]
+			pieceInfo = [this.ep[t], this.eo[t]]
 			for (var i = 3; i > 0; i--) {
-				cubie.ep[moveInfo.edges[0][(i+1)%4]] = cubie.ep[moveInfo.edges[0][i]]
-				cubie.eo[moveInfo.edges[0][(i+1)%4]] = (cubie.eo[moveInfo.edges[0][i]]+moveInfo.edges[1][i])%2
+				this.ep[moveInfo.edges[0][(i+1)%4]] = this.ep[moveInfo.edges[0][i]]
+				this.eo[moveInfo.edges[0][(i+1)%4]] = (this.eo[moveInfo.edges[0][i]]+moveInfo.edges[1][i])%2
 			}
-			cubie.ep[moveInfo.edges[0][1]] = pieceInfo[0]
-			cubie.eo[moveInfo.edges[0][1]] = (pieceInfo[1]+moveInfo.edges[1][0])%2
+			this.ep[moveInfo.edges[0][1]] = pieceInfo[0]
+			this.eo[moveInfo.edges[0][1]] = (pieceInfo[1]+moveInfo.edges[1][0])%2
 		}
 
 		// === Centers ===
 		if (moveInfo.hasOwnProperty('centers')) {
 			var t = moveInfo.centers[0]
-			pieceInfo = cubie.c[t]
+			pieceInfo = this.c[t]
 			for (var i = 3; i > 0; i--) {
-				cubie.c[moveInfo.centers[(i+1)%4]] = cubie.c[moveInfo.centers[i]]
+				this.c[moveInfo.centers[(i+1)%4]] = this.c[moveInfo.centers[i]]
 			}
-			cubie.c[moveInfo.centers[1]] = pieceInfo
+			this.c[moveInfo.centers[1]] = pieceInfo
 		}
-
-		this.applyCubie(cubie)
 	}
 	// Make all moves in a scramble string
 	scramble(s) {
 		var moves = s.split(' ').filter((m) => m.length > 0)
 		for (var i in moves) this.move(moves[i])
 	}
+	multiply(cube_info) {
+		var cube = new Cube (cube_info)
+		var temp = new Cube (this)
+		for (var i in cube.ep) {
+			this.ep[i] = temp.ep[cube.ep[i]]
+			this.eo[i] = (temp.eo[cube.ep[i]] + cube.eo[i])%2
+		}
+		for (var i in cube.cp) {
+			this.cp[i] = temp.cp[cube.cp[i]]
+			this.co[i] = (temp.co[cube.cp[i]] + cube.co[i])%3
+		}
+		for (var i in cube.c) {
+			this.c[i] = temp.c[cube.c[i]]
+		}
+	}
 	// Rotate cube to the default orientation
 	orient() {
-		var cubie = Cube.coordinateToCubie(this)
 		var moveWhite = ["", "z", "x", "z'", "x'", "x2"]
-		for (var i in cubie.c) {
-			if (cubie.c[i] == 0) {
+		for (var i in this.c) {
+			if (this.c[i] == 0) {
 				this.scramble(moveWhite[i])
 				break
 			}
 		}
 
-		cubie = Cube.coordinateToCubie(this)
 		var moveGreen = ["", "y'", "", "y", "y2", ""]
-		for (var i in cubie.c) {
-			if (cubie.c[i] == 2) {
+		for (var i in this.c) {
+			if (this.c[i] == 2) {
 				this.scramble(moveGreen[i])
 				break
 			}
@@ -240,63 +240,53 @@ class Cube {
 	}
 	// Check if cube is solved
 	isSolved() {
-		var solved = new Cube ()
+		var identity = new Cube ()
 		var oriented = new Cube (this)
 		oriented.orient()
-		return (oriented.hash() == solved.hash())
+		return oriented.hash() == identity.hash()
 	}
 	/* Hash function to comparece cubes
-		affected_pieces:
-			an array of arrays [corners, edges, centers], that represent the pieces for which
-			bot ORIENTATION AND PERMUTATION are supposed to be considered in the hash function
-		affected_positions:
-			an array of arrays [corners, edges], that represent the positions in the
-			cube in which the ORIENTATION is supposed to be considered in the hash function
-		
-		if both arguments are missing, then affected_pieces, by default, is the whole cube
+		affected_permutation:
+			track permutation of these pieces
+		affected_orientation:
+			track orientations of these pieces
 	*/
-	hash(affected_pieces, affected_positions) {
-		var str = ""
-
-		if (affected_pieces == undefined && affected_positions == undefined) {
-			affected_pieces = [[0, 1, 2, 3, 4, 5, 6, 7], [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], [0, 1, 2, 3, 4, 5]]
-		}
-
-		var cubie = Cube.coordinateToCubie(this)
-
-		for (var i in cubie.ep) {
-			if (affected_pieces[1] != undefined && affected_pieces[1].indexOf(cubie.ep[i]) >= 0) {
-				str += String.fromCharCode(cubie.ep[i]+48)
-				str += String.fromCharCode(cubie.eo[i]+48)
-			} else {
-				str += String.fromCharCode(47)
-				if (affected_positions != undefined && affected_positions[1] != undefined && affected_positions[1].indexOf(parseInt(i)) >= 0)
-					str += String.fromCharCode(cubie.eo[i]+48)
-				else str += String.fromCharCode(47)
-			}
-		}
-		for (var i in cubie.cp) {
-			if (affected_pieces[0] != undefined && affected_pieces[0].indexOf(cubie.cp[i]) >= 0) {
-				str += String.fromCharCode(cubie.cp[i]+48)
-				str += String.fromCharCode(cubie.co[i]+48)
-			} else {
-				str += String.fromCharCode(47)
-				if (affected_positions != undefined && affected_positions[0] != undefined && affected_positions[0].indexOf(parseInt(i)) >= 0)
-					str += String.fromCharCode(cubie.co[i]+48)
-				else str += String.fromCharCode(47)
-			}
-		}
-		for (var i in cubie.c) {
-			if (affected_pieces[2] != undefined && affected_pieces[2].indexOf(cubie.c[i]) >= 0) {
-				str += String.fromCharCode(cubie.c[i]+48)
-			} else {
-				str += String.fromCharCode(47)
+	hash(affected_permutation, affected_orientation) {
+		var defaultAffected = () => {
+			return {
+				corners: [0, 1, 2, 3, 4, 5, 6, 7, 8],
+				edges: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+				centers: [0, 1, 2, 3, 4, 5]
 			}
 		}
 
-		this.applyCubie(cubie)
+		if (affected_permutation == undefined) affected_permutation = defaultAffected()
+		if (affected_orientation == undefined) affected_orientation = defaultAffected()
 
-		return str
+		var hashString = ""
+		for (var i in this.ep) {
+			if (affected_permutation.hasOwnProperty('edges') && affected_permutation.edges.indexOf(this.ep[i]) >= 0) {
+				hashString += String.fromCharCode(this.ep[i]+48)
+			} else hashString += String.fromCharCode(47)
+			if (affected_orientation.hasOwnProperty('edges') && affected_orientation.edges.indexOf(this.ep[i]) >= 0) {
+				hashString += String.fromCharCode(this.eo[i]+48)
+			} else hashString += String.fromCharCode(47)
+		}
+		for (var i in this.cp) {
+			if (affected_permutation.hasOwnProperty('corners') && affected_permutation.corners.indexOf(this.cp[i]) >= 0) {
+				hashString += String.fromCharCode(this.cp[i]+48)
+			} else hashString += String.fromCharCode(47)
+			if (affected_orientation.hasOwnProperty('corners') && affected_orientation.corners.indexOf(this.co[i]) >= 0) {
+				hashString += String.fromCharCode(this.co[i]+48)
+			} else hashString += String.fromCharCode(47)
+		}
+		for (var i in this.c) {
+			if (affected_permutation.hasOwnProperty('centers') && affected_permutation.centers.indexOf(this.c[i]) >= 0) {
+				hashString += String.fromCharCode(this.c[i]+48)
+			} else hashString += String.fromCharCode(47)
+		}
+
+		return hashString
 	}
 }
 
