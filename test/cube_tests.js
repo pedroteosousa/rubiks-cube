@@ -6,38 +6,80 @@ describe('Tests for cube.js', function () {
 		for (var i = 0; i < 20; i++) {
 			var cube, random = Cube.random()
 			cube = new Cube (random)
-			assert.deepEqual(random, cube, 'copy constructor not working')
+			assert.deepEqual(cube, random, 'copy constructor not working')
 			cube = new Cube (random.hash())
-			assert.deepEqual(random, cube, 'hash function constructor not working')
+			assert.deepEqual(cube, random, 'hash function constructor not working')
 			cube = new Cube (random)
-			assert.deepEqual(random, cube, 'coordinate constructor not working')
+			assert.deepEqual(cube, random, 'coordinate constructor not working')
+			cube = Cube.identity()
+			assert.deepEqual(cube.isSolved(), true, 'Cube.identity() not working')
 		}
 	})
 	it('Testing cubie and coordinate functions', function () {
 		for (var i = 0; i < 20; i++) {
 			var random = Cube.random()
-			var coordinates = Cube.cubieToCoordinate(Cube.coordinateToCubie(random))
-			assert.deepEqual(coordinates, random, "cubes did not match")	
+			var cubie = Cube.coordinateToCubie(Cube.cubieToCoordinate(random))
+			assert.deepEqual(cubie, random, "cubes did not match")	
 		}
 	})
 	it('Testing moves and simple hash function', function () {
 		var tests = [{
-				scramble: "D' R' F L' D2 F U' D' L U' F R2 B' D2 F' R2 U2 B' D2 R2 B ",
-				inverse: "B' R2 D2 B U2 R2 F D2 B R2 F' U L' D U F' D2 L F' R D ",
-				solve: "y2 R F' Rw' U B F U M U' M' U2 Rw' U' Rw R U Rw' U Rw U' Rw' U' R' U2 R U R' U R U' R U R' F' R U R' U' R' F R2 U' R' M' U M U M' U' M U2 M U' M2 U2 M' U2 M' L2 "
-			}, {
-				scramble: "L2 U2 B2 R2 D2 B2 F' D2 F R2 F2 R' F L' D U' F L F R' ",
-				inverse: "R F' L' F' U D' L F' R F2 R2 F' D2 F B2 D2 R2 B2 U2 L2 ",
-				solve: "z2 R2 U R F Rw' F U2 R B' U' M2 U R2 U' R' U2 R U M U M' R U2 L' B' L U' L U2 L' U' L U' L' U' R U R' F' R U R' U' R' F R2 U' R' M' U2 M U M' U2  "
+			scramble: "D' R' F L' D2 F U' D' L U' F R2 B' D2 F' R2 U2 B' D2 R2 B",
+			inverse: "B' R2 D2 B U2 R2 F D2 B R2 F' U L' D U F' D2 L F' R D",
+			solve: "y2 R F' Rw' U B F U M U' M' U2 Rw' U' Rw R U Rw' U Rw U' Rw' U' R' U2 R U R' U R U' R U R' F' R U R' U' R' F R2 U' R' M' U M U M' U' M U2 M U' M2 U2 M' U2 M' L2"
+		}, {
+			scramble: "L2 U2 B2 R2 D2 B2 F' D2 F R2 F2 R' F L' D U' F L F R'",
+			inverse: "R F' L' F' U D' L F' R F2 R2 F' D2 F B2 D2 R2 B2 U2 L2",
+			solve: "z2 R2 U R F Rw' F U2 R B' U' M2 U R2 U' R' U2 R U M U M' R U2 L' B' L U' L U2 L' U' L U' L' U' R U R' F' R U R' U' R' F R2 U' R' M' U2 M U M' U2"
 		}]
 		for (var i in tests) {
 			var identity = new Cube ()
 			var cube = new Cube ()
-			cube.scramble(tests[i].scramble + tests[i].solve)
+			cube.scramble(tests[i].scramble + " " + tests[i].solve)
 			cube.orient()
 			assert.equal(cube.hash(), identity.hash(), "test " + i + ": scramble + solve")
-			cube.scramble(tests[i].inverse + tests[i].scramble)
+			cube.scramble(tests[i].inverse + " " + tests[i].scramble)
 			assert.equal(cube.isSolved(), true, "test " + i + ": inverse + scramble")
+		}
+	})
+	it('Testing multiply function', function () {
+		var tests = [{
+			scramble: "R B R' U'",
+			times: 6
+		}, {
+			scramble: "R U'",
+			times: 63
+		}]
+		for (var i in tests) {
+			var cube = new Cube ()
+			while (tests[i].times--) {
+				cube.scramble(tests[i].scramble)
+			}
+			assert.equal(cube.isSolved(), true, "test " + i + ": did not cycle in time")
+		}
+	})
+	it('Testing hash function with arguments', function () {
+		var tests = [{
+			scramble: "R U R' U R U2 R' L' U' L U' L' U2 L",
+			perm_options: {corners: [0, 3]},
+			orien_options: {}
+		} , {
+			scramble: "U",
+			perm_options: {},
+			orien_options: undefined
+		} , {
+			scramble: "M2 U M' U M' U M' U2 M' U M' U M' U",
+			perm_options: undefined,
+			orien_options: {}
+		} , {
+			scramble: "M S2 M S2",
+			perm_options: {centers: [0, 1, 2, 3, 4, 5]},
+			orien_options: {}
+		}]
+		for (var i in tests) {
+			var cube = Cube.identity()
+			cube.scramble(tests[i].scramble)
+			assert(cube.hash(tests[i].perm_options, tests[i].orien_options) == Cube.identity().hash(tests[i].perm_options, tests[i].orien_options), true, "test " + i + ": cubes did not match")
 		}
 	})
 	it('Testing parity', function () {
@@ -55,11 +97,72 @@ describe('Tests for cube.js', function () {
 		var odd = 0
 		for (var i = 0; i < num_tests; i++) {
 			var random = Cube.random()
-			var parity = getParity(random.ep, 12)
-			assert.equal(parity, getParity(random.cp, 8), "edge and corner parity did not match")
+			var coordinates = Cube.cubieToCoordinate(random)
+			var parity = getParity(coordinates.ep, 12)
+			assert.equal(parity, getParity(coordinates.cp, 8), "edge and corner parity did not match")
 			if (parity == 1) odd++;
 		}
 		assert.notEqual(odd, 0, "no odd parity cases generated in random()")
 		assert.notEqual(odd, num_tests, "no even parity cases generated in random()")
+	})
+	it('Testing README.md examples', function () {
+		var multi = new Cube ()
+		multi.scramble("R U L D")
+
+		var cube = new Cube ()
+
+		var count = 0;
+		do {
+			cube.multiply(multi)
+		    count++;
+		} while (!cube.isSolved())
+
+		assert.equal(count, 315, "cycle did not match expected size")
+	
+		var cube1 = new Cube ()
+		var cube2 = new Cube ()
+
+		// apply an algorithm
+		cube1.scramble("U2 M2 U2 M' U2 M2 U2 M'")
+		cube2.scramble("M S2 M' S2")
+		// all face and slice moves are implemented, as well as all rotations
+
+		// check if cube is solved
+		assert.equal(cube1.isSolved(), false, "cube1 should not be solved") // false
+
+		// compare cubes using hash()
+		assert.equal(cube1.hash() == cube2.hash(), true, "cube1 and cube2 should be equal") // true
+
+		// it's important to note that the hash function takes permutations of centers into account, that means:
+		cube = new Cube ()
+		cube.scramble('x y')
+		// rotations of the solved cube are considered different
+		assert.equal(cube.hash() == Cube.identity().hash(), false, "cube should not have the same hash as identity cube") // false
+
+		// but you can use the orient() function to put the cube back in WCA orientation and then compare it
+		cube.orient()
+		assert.equal(cube.hash() == Cube.identity().hash(), true, "oriented cube should have the same hash as identity") // true
+
+		// this algorithm flips two corners (UBL and UFL) in place
+		cube = Cube.identity()
+		cube.scramble("R U R' U R U2 R' L' U' L U' L' U2 L")
+		assert.equal(cube.hash() == Cube.identity().hash(), false, "cube should not be solved") // false
+
+		var options = {
+			corners: [0, 3], // piece codes for UBL and UFL (check below for all piece codes)
+		    edges: [],
+		    centers: []
+		} // you could have just the 'corners' field here, but the order are included for reference
+
+		assert.equal(cube.hash(options, {}) == Cube.identity().hash(options, {}), true, "hash with options should be the same") // true
+		// we need to send '{}' to the orientations options, otherwise, it would consider orientations of all pieces
+
+		// like wise, for the orientation:
+		cube = Cube.identity()
+		cube.scramble('U')
+		// note that the only moves that affect orientation of pieces are F, B and slice moves
+
+		assert.equal(cube.hash() == Cube.identity().hash(), false, "hash without options should be different") // false
+		assert.equal(cube.hash({}, undefined) == Cube.identity().hash({}, undefined), true, "hash with options should be the same") // true
 	})
 })
