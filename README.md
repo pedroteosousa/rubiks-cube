@@ -69,6 +69,40 @@ cube.orient()
 console.log(cube.hash() == Cube.identity().hash()) // true
 ```
 
+#### Multiply function
+
+This function does the equivalent of applying the scramble of a cube into another
+
+```javascript
+const Cube = require('rubiks-cube')
+
+var multi = new Cube ()
+multi.scramble("R U L D")
+
+var cube = new Cube ()
+
+var count = 0;
+do {
+	cube.multiply(multi)
+    count++;
+} while (!cube.isSolved())
+
+console.log(count) // 315
+
+// you can do it without a scramble too
+multi = Cube.random()
+cube = new Cube ()
+count = 0;
+do {
+	cube.multiply(multi)
+    count++;
+} while (!cube.isSolved())
+
+console.log(count) // I have no idea, but you can try (:
+```
+
+You can use this to apply a long algorithm if you are using it frequently, because it's a lot faster, or if you have the cube but not the actual scramble (like in the example of the random cube)
+
 #### More complex uses of the hash function:
 	
 The hash function can receive arguments to ignore a few pieces.
@@ -80,11 +114,12 @@ Sending `undefined` in any of the two arguments causes the hash function to cons
 const Cube = require('rubiks-cube')
 
 // this algorithm flips two corners (UBL and UFL) in place
-var cube = Cube.identity().scramble("R U R' U R U2 R' L' U' L U' L' U2 L")
+var cube = Cube.identity()
+cube.scramble("R U R' U R U2 R' L' U' L U' L' U2 L")
 console.log(cube.hash() == Cube.identity().hash()) // false
 
 var options = {
-	corners: [0, 3] // piece codes for UBL and UFL (check below for all piece codes)
+	corners: [0, 3], // piece codes for UBL and UFL (check below for all piece codes)
     edges: [],
     centers: []
 } // you could have just the 'corners' field here, but the order are included for reference
@@ -93,11 +128,12 @@ console.log(cube.hash(options, {}) == Cube.identity().hash(options, {})) // true
 // we need to send '{}' to the orientations options, otherwise, it would consider orientations of all pieces
 
 // like wise, for the orientation:
-cube = Cube.identity().scramble('U')
-// note that the only moves that affect orientation of pieces are F, B and slice moves
+cube = Cube.identity()
+cube.scramble('U')
+// note that the only moves that affect orientation of pieces are F, B, slice moves and rotations (since piece orientations are defined with the WCA cube orientation as a reference) 
 
 console.log(cube.hash() == Cube.identity().hash()) // false
-console.log(cube.hash({}, options) == Cube.identity().hash({}, options)) // true
+console.log(cube.hash({}, undefined) == Cube.identity().hash({}, undefined)) // true
 ```
 
 A bit of information is lost while doing this, so the hash function can only be used in a constructor if it received no arguments (or both arguments `undefined`).
@@ -126,11 +162,3 @@ Centers:
 ## License
 
 This project is licensed under the MIT License
-
-
-
-
-
-
-
-
