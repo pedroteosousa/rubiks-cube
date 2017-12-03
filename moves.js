@@ -6,13 +6,9 @@ class Moves {
 	}
 	static invertMove(move) {
 		if (Moves.list().indexOf(move) >= 0) {
-			if (move.length == 2) {
-				if (move[1] == "'") {
-					return move[0]
-				} else return move
-			} else {
-				return move + "'";
-			}
+			if (move[move.length-1] == '2') return move
+			else if (move[move.length-1] == "'") return move.splice(-1, 1)
+			else return move + "'"
 		}
 	}
 	static invert(scramble) {

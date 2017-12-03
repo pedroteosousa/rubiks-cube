@@ -15,6 +15,8 @@ describe('Tests for moves.js', function () {
 			scramble: "D' R' F L' D2 F U' D' L U' F R2 B' D2 F' R2 U2 B' D2 R2 B"
 		}, {
 			scramble: "L2 U2 B2 R2 D2 B2 F' D2 F R2 F2 R' F L' D U' F L F R'"
+		}, {
+			scramble: Cube.Moves().list().join(' ')
 		}]
 		for (var i in tests) {
 			var cube = new Cube ()
