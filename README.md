@@ -58,7 +58,7 @@ console.log(cube1.isSolved()) // false
 // compare cubes using hash()
 console.log(cube1.hash() == cube2.hash()) // true
 
-// it's important to note that the hash function takes permutations of centers into account,
+// it's important to note that, differently from isSolved() the hash function takes permutations of centers into account,
 // that means:
 var cube = new Cube ()
 cube.scramble('x y')
@@ -123,7 +123,7 @@ var options = {
 	corners: [0, 3], // piece codes for UBL and UFL (check below for all piece codes)
     edges: [],
     centers: []
-} // you could have just the 'corners' field here, but the order are included for reference
+} // you could have just the 'corners' field here, but the others are included for reference
 
 console.log(cube.hash(options, {}) == Cube.identity().hash(options, {})) // true
 // we need to send '{}' to the orientations options, otherwise, it would consider orientations
@@ -132,8 +132,7 @@ console.log(cube.hash(options, {}) == Cube.identity().hash(options, {})) // true
 // like wise, for the orientation:
 cube = Cube.identity()
 cube.scramble('U')
-// note that the only moves that affect orientation of pieces are F, B, slice moves and rotations
-// (since piece orientations are defined with the WCA cube orientation as a reference) 
+// U and D do not affect the orientation of any piece 
 
 console.log(cube.hash() == Cube.identity().hash()) // false
 console.log(cube.hash({}, undefined) == Cube.identity().hash({}, undefined)) // true
