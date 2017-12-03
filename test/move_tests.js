@@ -8,7 +8,7 @@ describe('Tests for moves.js', function () {
 			var copy = new Cube (cube)
 			cube.scramble(Cube.Moves().list()[i])
 			assert.equal(cube.hash() == copy.hash(), false, "move in list does not work")
-		}	
+		}
 	})
 	it('Testing inverse function', function () {
 		var tests = [{

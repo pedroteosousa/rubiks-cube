@@ -7,7 +7,7 @@ class Moves {
 	static invertMove(move) {
 		if (Moves.list().indexOf(move) >= 0) {
 			if (move[move.length-1] == '2') return move
-			else if (move[move.length-1] == "'") return move.splice(-1, 1)
+			else if (move[move.length-1] == "'") return move.slice(0, -1)
 			else return move + "'"
 		}
 	}
