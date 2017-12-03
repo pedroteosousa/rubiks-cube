@@ -41,6 +41,9 @@ class Cube {
 			}
 		}
 	}
+	static Moves () {
+		return Moves
+	}
 	static identity() {
 		var identity = new Cube ()
 		return identity

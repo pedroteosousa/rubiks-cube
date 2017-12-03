@@ -1,5 +1,27 @@
-module.exports = {
-	moves: () => {
+"use strict"
+
+class Moves {
+	static list() {
+		return Object.keys(Moves.moves())
+	}
+	static invertMove(move) {
+		if (Moves.list().indexOf(move) >= 0) {
+			if (move.length == 2) {
+				if (move[1] == "'") {
+					return move[0]
+				} else return move
+			} else {
+				return move + "'";
+			}
+		}
+	}
+	static invert(scramble) {
+		var inverse = ""
+		var moves = scramble.split(' ').filter((m) => m.length > 0)
+		for (var i in moves) inverse = this.invertMove(moves[i]) + " " + inverse
+		return inverse.trim()
+	}
+	static moves () {
 		return {
 			"U" : {
 				"corners" : [[0, 1, 2, 3], [0, 0, 0, 0]],
@@ -76,6 +98,24 @@ module.exports = {
 			"Rw" : {"sequence" : "R M'"},
 			"Rw'" : {"sequence" : "R' M"},
 			"Rw2" : {"sequence" : "R2 M2"},
+			"r": {"sequence" : "Rw"},
+			"r'": {"sequence" : "Rw'"},
+			"r2": {"sequence" : "Rw2"},
+			"l": {"sequence" : "Lw"},
+			"l'": {"sequence" : "Lw'"},
+			"l2": {"sequence" : "Lw2"},
+			"f": {"sequence" : "Fw"},
+			"f'": {"sequence" : "Fw'"},
+			"f2": {"sequence" : "Fw2"},
+			"b": {"sequence" : "Bw"},
+			"b'": {"sequence" : "Bw'"},
+			"b2": {"sequence" : "Bw2"},
+			"d": {"sequence" : "Dw"},
+			"d'": {"sequence" : "Dw'"},
+			"d2": {"sequence" : "Dw2"},
+			"u": {"sequence" : "Uw"},
+			"u'": {"sequence" : "Uw'"},
+			"u2": {"sequence" : "Uw2"},
 			"Lw" : {"sequence" : "L M"},
 			"Lw'" : {"sequence" : "L' M'"},
 			"Lw2" : {"sequence" : "L2 M2"},
@@ -112,3 +152,5 @@ module.exports = {
 		}
 	}
 }
+
+module.exports = Moves
