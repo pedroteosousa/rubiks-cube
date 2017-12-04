@@ -1,7 +1,7 @@
 const assert = require('chai').assert
 const Cube = require('../cube')
 
-describe('Tests for cube.js', function () {
+describe('Testing cube functions', function () {
 	it('Testing constructos', function () {
 		for (var i = 0; i < 20; i++) {
 			var cube, random = Cube.random()
@@ -14,6 +14,17 @@ describe('Tests for cube.js', function () {
 			cube = Cube.identity()
 			assert.deepEqual(cube.isSolved(), true, 'Cube.identity() not working')
 		}
+		// testing scramble 'constructor'
+		var tests = [{
+			scramble: "D' R' F L' D2 F U' D' L U' F R2 B' D2 F' R2 U2 B' D2 R2 B",
+			solve: "y2 R F' Rw' U B F U M U' M' U2 Rw' U' Rw R U Rw' U Rw U' Rw' U' R' U2 R U R' U R U' R U R' F' R U R' U' R' F R2 U' R' M' U M U M' U' M U2 M U' M2 U2 M' U2 M' L2"
+		}, {
+			scramble: "L2 U2 B2 R2 D2 B2 F' D2 F R2 F2 R' F L' D U' F L F R'",
+			solve: "z2 R2 U R F Rw' F U2 R B' U' M2 U R2 U' R' U2 R U M U M' R U2 L' B' L U' L U2 L' U' L U' L' U' R U R' F' R U R' U' R' F R2 U' R' M' U2 M U M' U2"
+		}]
+		for (var i in tests) {
+			assert.equal(Cube.scramble(tests[i].scramble).scramble(tests[i].solve).isSolved(), true, "scramble 'constructor' not working")
+		}
 	})
 	it('Testing cubie and coordinate functions', function () {
 		for (var i = 0; i < 20; i++) {
@@ -25,21 +36,16 @@ describe('Tests for cube.js', function () {
 	it('Testing moves and simple hash function', function () {
 		var tests = [{
 			scramble: "D' R' F L' D2 F U' D' L U' F R2 B' D2 F' R2 U2 B' D2 R2 B",
-			inverse: "B' R2 D2 B U2 R2 F D2 B R2 F' U L' D U F' D2 L F' R D",
 			solve: "y2 R F' Rw' U B F U M U' M' U2 Rw' U' Rw R U Rw' U Rw U' Rw' U' R' U2 R U R' U R U' R U R' F' R U R' U' R' F R2 U' R' M' U M U M' U' M U2 M U' M2 U2 M' U2 M' L2"
 		}, {
 			scramble: "L2 U2 B2 R2 D2 B2 F' D2 F R2 F2 R' F L' D U' F L F R'",
-			inverse: "R F' L' F' U D' L F' R F2 R2 F' D2 F B2 D2 R2 B2 U2 L2",
 			solve: "z2 R2 U R F Rw' F U2 R B' U' M2 U R2 U' R' U2 R U M U M' R U2 L' B' L U' L U2 L' U' L U' L' U' R U R' F' R U R' U' R' F R2 U' R' M' U2 M U M' U2"
 		}]
 		for (var i in tests) {
 			var identity = new Cube ()
 			var cube = new Cube ()
 			cube.scramble(tests[i].scramble + " " + tests[i].solve)
-			cube.orient()
-			assert.equal(cube.hash(), identity.hash(), "test " + i + ": scramble + solve")
-			cube.scramble(tests[i].inverse + " " + tests[i].scramble)
-			assert.equal(cube.isSolved(), true, "test " + i + ": inverse + scramble")
+			assert.equal(cube.orient().hash(), identity.hash(), "test " + i + ": scramble + solve")
 		}
 	})
 	it('Testing multiply function', function () {
@@ -56,6 +62,23 @@ describe('Tests for cube.js', function () {
 				cube.scramble(tests[i].scramble)
 			}
 			assert.equal(cube.isSolved(), true, "test " + i + ": did not cycle in time")
+		}
+	})
+	it('Testing inverse function', function () {
+		var tests = [{
+			scramble: "F"
+		}, {
+			scramble: "D' R' F L' D2 F U' D' L U' F R2 B' D2 F' R2 U2 B' D2 R2 B"
+		}, {
+			scramble: "L2 U2 B2 R2 D2 B2 F' D2 F R2 F2 R' F L' D U' F L F R'"
+		}]
+		for (var i in tests) {
+			var cube = Cube.scramble(tests[i].scramble)
+			assert.equal(cube.multiply(cube.inverse()).isSolved(), true, "generated cube is not the inverse of original")
+		}
+		for (var i = 0; i < 20; i++) {
+			var cube = Cube.random()
+			assert.equal(cube.multiply(cube.inverse()).isSolved(), true, "generated cube is not hte inverse of original")
 		}
 	})
 	it('Testing hash function with arguments', function () {
@@ -77,9 +100,8 @@ describe('Tests for cube.js', function () {
 			orien_options: {}
 		}]
 		for (var i in tests) {
-			var cube = Cube.identity()
-			cube.scramble(tests[i].scramble)
-			assert(cube.hash(tests[i].perm_options, tests[i].orien_options) == Cube.identity().hash(tests[i].perm_options, tests[i].orien_options), true, "test " + i + ": cubes did not match")
+			assert(Cube.scramble(tests[i].scramble).hash(tests[i].perm_options, tests[i].orien_options) 
+				== Cube.identity().hash(tests[i].perm_options, tests[i].orien_options), true, "test " + i + ": cubes did not match")
 		}
 	})
 	it('Testing parity', function () {

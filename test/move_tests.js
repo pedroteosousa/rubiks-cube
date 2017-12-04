@@ -1,12 +1,12 @@
 const assert = require('chai').assert
 const Cube = require('../cube')
 
-describe('Tests for moves.js', function () {
+describe('Testing scramble functions', function () {
 	it('Testing list function', function () {
-		for (var i in Cube.Moves().list()) {
+		for (var i in Cube.moves()) {
 			var cube = new Cube ()
 			var copy = new Cube (cube)
-			cube.scramble(Cube.Moves().list()[i])
+			cube.scramble(i)
 			assert.equal(cube.hash() == copy.hash(), false, "move in list does not work")
 		}
 	})
@@ -16,12 +16,12 @@ describe('Tests for moves.js', function () {
 		}, {
 			scramble: "L2 U2 B2 R2 D2 B2 F' D2 F R2 F2 R' F L' D U' F L F R'"
 		}, {
-			scramble: Cube.Moves().list().join(' ')
+			scramble: Cube.allMoves().join(' ')
 		}]
 		for (var i in tests) {
 			var cube = new Cube ()
 			cube.scramble(tests[i].scramble)
-			cube.scramble(Cube.Moves().invert(tests[i].scramble))
+			cube.scramble(Cube.inverse(tests[i].scramble))
 			assert.equal(cube.isSolved(), true, "inverse scramble did not solve the cube")
 		}
 	})

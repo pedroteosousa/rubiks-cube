@@ -3,7 +3,10 @@ const Moves = require('./moves')
 "use strict"
 
 class Cube {
-	// Creates a solved cube at WCA scrambling orientation
+	/*
+		By default, the constructor creates a solved cube, but copy, hash() and coordinate
+		constructor are used depending on the argument given
+	*/
 	constructor(other) {
 		// Apply cubie to this cube
 		var apply = (cubie) => {
@@ -44,9 +47,67 @@ class Cube {
 	static Moves () {
 		return Moves
 	}
+	// Returns a solved cube
 	static identity() {
 		var identity = new Cube ()
 		return identity
+	}
+	// Create a random cube state
+	static random () {
+		var randomInt = (max) => {
+			return Math.floor(Math.random() * (max + 1));
+		}
+
+		// Verify if both edges and corners have the same parity
+		var verifyParity = (cp, ep) => {
+			var getSum = (data, num_pieces) => {
+				var sum = 0
+				for (var i=1; i <= num_pieces; i++) {
+					sum += data%i
+					data = Math.floor(data / i)
+				}
+				return sum;
+			}
+			return (getSum(cp, 8)%2) == (getSum(ep, 12)%2)
+		}
+
+		var data
+		do {
+			data = {
+				co: randomInt(2186),
+				eo: randomInt(2047),
+				cp: randomInt(40319),
+				ep: randomInt(479001599),
+				c: 0
+			}
+		} while (!verifyParity(data.cp, data.ep));
+
+		return new Cube (data);
+	}
+	// Get cube after a scramble
+	static scramble (scramble) {
+		var cube = new Cube ()
+		cube.scramble(scramble)
+		return cube
+	}
+	// Get the inverse of a cube or of a scramble
+	static inverse (arg) {
+		if (typeof arg == "string") {
+			var scramble = arg
+			if (scramble.indexOf(' ') >= 0) {
+				var inverse = " "
+				var moves = scramble.split(' ').filter((m) => m.length > 0)
+				for (var i in moves) inverse = Cube.inverse(moves[i]) + " " + inverse
+				return inverse
+			} else {
+				if (scramble[scramble.length-1] == '2') return scramble
+				else if (scramble[scramble.length-1] == "'") return scramble.slice(0, -1)
+				else return scramble + "'"
+			}
+		} else {
+			var cube = new Cube (arg)
+			return cube.inverse()
+		}
 	}
 	// Coordinate data to Cubie data
 	static coordinateToCubie(data) {
@@ -121,93 +182,66 @@ class Cube {
 			c: permutation(data.c)
 		}
 	}
-	// Create a random cube state
-	static random() {
-		var randomInt = (max) => {
-			return Math.floor(Math.random() * (max + 1));
-		}
-
-		// Verify if both edges and corners have the same parity
-		var verifyParity = (cp, ep) => {
-			var getSum = (data, num_pieces) => {
-				var sum = 0
-				for (var i=1; i <= num_pieces; i++) {
-					sum += data%i
-					data = Math.floor(data / i)
-				}
-				return sum;
-			}
-			return (getSum(cp, 8)%2) == (getSum(ep, 12)%2)
-		}
-
-		var data
-		do {
-			data = {
-				co: randomInt(2186),
-				eo: randomInt(2047),
-				cp: randomInt(40319),
-				ep: randomInt(479001599),
-				c: 0
-			}
-		} while (!verifyParity(data.cp, data.ep));
-
-		return new Cube (data);
+	static allMoves() {
+		return Object.keys(Cube.moves())
 	}
 	// List of moves given by cicles and/or sequences of other moves
 	static moves() {
 		return Moves.moves()
 	}
-	// Make a move from the list of moves	
-	move(m) {
-		var moveInfo = Cube.moves()[m]
-		var pieceInfo
-
-		if (moveInfo == undefined) return
-
-		// === Sequence ===
-		if (moveInfo.hasOwnProperty('sequence')) {
-			this.scramble(moveInfo.sequence)
-		}
-
-		// === Corners ===
-		if (moveInfo.hasOwnProperty('corners')) {
-			var t = moveInfo.corners[0][0]
-			pieceInfo = [this.cp[t], this.co[t]]
-			for (var i = 3; i > 0; i--) {
-				this.cp[moveInfo.corners[0][(i+1)%4]] = this.cp[moveInfo.corners[0][i]]
-				this.co[moveInfo.corners[0][(i+1)%4]] = (this.co[moveInfo.corners[0][i]]+moveInfo.corners[1][i])%3
-			}
-			this.cp[moveInfo.corners[0][1]] = pieceInfo[0]
-			this.co[moveInfo.corners[0][1]] = (pieceInfo[1]+moveInfo.corners[1][0])%3
-		}
-
-		// === Edges ===
-		if (moveInfo.hasOwnProperty('edges')) {
-			var t = moveInfo.edges[0][0]
-			pieceInfo = [this.ep[t], this.eo[t]]
-			for (var i = 3; i > 0; i--) {
-				this.ep[moveInfo.edges[0][(i+1)%4]] = this.ep[moveInfo.edges[0][i]]
-				this.eo[moveInfo.edges[0][(i+1)%4]] = (this.eo[moveInfo.edges[0][i]]+moveInfo.edges[1][i])%2
-			}
-			this.ep[moveInfo.edges[0][1]] = pieceInfo[0]
-			this.eo[moveInfo.edges[0][1]] = (pieceInfo[1]+moveInfo.edges[1][0])%2
-		}
-
-		// === Centers ===
-		if (moveInfo.hasOwnProperty('centers')) {
-			var t = moveInfo.centers[0]
-			pieceInfo = this.c[t]
-			for (var i = 3; i > 0; i--) {
-				this.c[moveInfo.centers[(i+1)%4]] = this.c[moveInfo.centers[i]]
-			}
-			this.c[moveInfo.centers[1]] = pieceInfo
-		}
-	}
 	// Make all moves in a scramble string
-	scramble(s) {
-		var moves = s.split(' ').filter((m) => m.length > 0)
-		for (var i in moves) this.move(moves[i])
+	scramble(scramble) {
+		if (scramble.indexOf(' ') >= 0) {
+			var moves = scramble.split(' ').filter((m) => m.length > 0)
+			for (var i in moves) this.scramble(moves[i])
+		} else {
+			var moveInfo = Cube.moves()[scramble]
+			var pieceInfo
+
+			if (moveInfo == undefined) return
+
+			// === Sequence ===
+			if (moveInfo.hasOwnProperty('sequence')) {
+				this.scramble(moveInfo.sequence)
+			}
+
+			// === Corners ===
+			if (moveInfo.hasOwnProperty('corners')) {
+				var t = moveInfo.corners[0][0]
+				pieceInfo = [this.cp[t], this.co[t]]
+				for (var i = 3; i > 0; i--) {
+					this.cp[moveInfo.corners[0][(i+1)%4]] = this.cp[moveInfo.corners[0][i]]
+					this.co[moveInfo.corners[0][(i+1)%4]] = (this.co[moveInfo.corners[0][i]]+moveInfo.corners[1][i])%3
+				}
+				this.cp[moveInfo.corners[0][1]] = pieceInfo[0]
+				this.co[moveInfo.corners[0][1]] = (pieceInfo[1]+moveInfo.corners[1][0])%3
+			}
+
+			// === Edges ===
+			if (moveInfo.hasOwnProperty('edges')) {
+				var t = moveInfo.edges[0][0]
+				pieceInfo = [this.ep[t], this.eo[t]]
+				for (var i = 3; i > 0; i--) {
+					this.ep[moveInfo.edges[0][(i+1)%4]] = this.ep[moveInfo.edges[0][i]]
+					this.eo[moveInfo.edges[0][(i+1)%4]] = (this.eo[moveInfo.edges[0][i]]+moveInfo.edges[1][i])%2
+				}
+				this.ep[moveInfo.edges[0][1]] = pieceInfo[0]
+				this.eo[moveInfo.edges[0][1]] = (pieceInfo[1]+moveInfo.edges[1][0])%2
+			}
+
+			// === Centers ===
+			if (moveInfo.hasOwnProperty('centers')) {
+				var t = moveInfo.centers[0]
+				pieceInfo = this.c[t]
+				for (var i = 3; i > 0; i--) {
+					this.c[moveInfo.centers[(i+1)%4]] = this.c[moveInfo.centers[i]]
+				}
+				this.c[moveInfo.centers[1]] = pieceInfo
+			}
+		}
+		return this
 	}
+	// Multiply a cube by another
 	multiply(cube_info) {
 		var cube = new Cube (cube_info)
 		var temp = new Cube (this)
@@ -222,6 +256,23 @@ class Cube {
 		for (var i in cube.c) {
 			this.c[i] = temp.c[cube.c[i]]
 		}
+		return this
+	}
+	// Get the inverse of a cube
+	inverse() {
+		var inverse = new Cube ()
+		for (var i in this.ep) {
+			inverse.ep[this.ep[i]] = parseInt(i)
+			inverse.eo[this.ep[i]] = this.eo[i]
+		}
+		for (var i in this.cp) {
+			inverse.cp[this.cp[i]] = parseInt(i)
+			inverse.co[this.cp[i]] = (this.co[i]*2)%3
+		}
+		for (var i in this.c) {
+			inverse.c[this.c[i]] = parseInt(i)
+		}
+		return inverse
 	}
 	// Rotate cube to the default orientation
 	orient() {
@@ -240,13 +291,13 @@ class Cube {
 				break
 			}
 		}
+		return this
 	}
 	// Check if cube is solved
-	isSolved() {
+	isSolved(affected_permutation, affected_orientation) {
 		var identity = new Cube ()
-		var oriented = new Cube (this)
-		oriented.orient()
-		return oriented.hash() == identity.hash()
+		var copy = new Cube (this)
+		return copy.orient().hash(affected_permutation, affected_orientation) == identity.hash(affected_permutation, affected_orientation)
 	}
 	/* Hash function to comparece cubes
 		affected_permutation:
