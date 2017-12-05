@@ -94,15 +94,18 @@ class Cube {
 	static inverse (arg) {
 		if (typeof arg == "string") {
 			var scramble = arg
+			if (scramble.match(/[\[\]:,]/g) != null) {
+				scramble = Cube.parseScramble(scramble)
+			}
 			if (scramble.indexOf(' ') >= 0) {
 				var inverse = " "
 				var moves = scramble.split(' ').filter((m) => m.length > 0)
 				for (var i in moves) inverse = Cube.inverse(moves[i]) + " " + inverse
-				return inverse
+				return inverse.trim()
 			} else {
 				if (scramble[scramble.length-1] == '2') return scramble
 				else if (scramble[scramble.length-1] == "'") return scramble.slice(0, -1)
-				else return scramble + "'"
+				else return (scramble + "'").trim()
 			}
 		} else {
 			var cube = new Cube (arg)
@@ -189,8 +192,42 @@ class Cube {
 	static moves() {
 		return Moves.moves()
 	}
+	static parseScramble(scramble) {
+
+		var parseCommutator = (commutator) => {
+			commutator = commutator.slice(1, commutator.length-1)
+			var steps = commutator.split(":")
+			commutator = steps[0] + " " + steps[1] + " " + Cube.inverse(steps[0]) + " " + Cube.inverse(steps[1])
+			return commutator
+		}
+
+		var parseConjugate = (conjugate) => {
+			conjugate = conjugate.slice(1, conjugate.length-1)
+			var steps = conjugate.split(",")
+			conjugate = steps[0] + " " + steps[1] + " " + Cube.inverse(steps[0])
+			return conjugate
+		}
+
+		var commutator = /\[[A-Za-z0-9' ]+:[A-Za-z0-9' ]+\]/g
+		var conjugate = /\[[A-Za-z0-9' ]+,[A-Za-z0-9' ]+\]/g
+		do {
+			var commutators = scramble.match(commutator)
+			for (var i in commutators) {
+				scramble = scramble.split(commutators[i]).join(parseCommutator(commutators[i]))
+			}
+			var conjugates = scramble.match(conjugate)
+			for (var i in conjugates) {
+				scramble = scramble.split(conjugates[i]).join(parseConjugate(conjugates[i]))
+			}
+		} while (conjugates != null || commutators != null)
+
+		return scramble.split(' ').map((h) => h.trim()).filter((h) => h.length > 0).join(' ')
+	}
 	// Make all moves in a scramble string
 	scramble(scramble) {
+		if (scramble.match(/[\[\]:,]/g) != null) {
+			scramble = Cube.parseScramble(scramble)
+		}
 		if (scramble.indexOf(' ') >= 0) {
 			var moves = scramble.split(' ').filter((m) => m.length > 0)
 			for (var i in moves) this.scramble(moves[i])

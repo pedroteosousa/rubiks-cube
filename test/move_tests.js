@@ -10,11 +10,13 @@ describe('Testing scramble functions', function () {
 			assert.equal(cube.hash() == copy.hash(), false, "move in list does not work")
 		}
 	})
-	it('Testing inverse function', function () {
+	it('Testing inverse and parse function', function () {
 		var tests = [{
 			scramble: "D' R' F L' D2 F U' D' L U' F R2 B' D2 F' R2 U2 B' D2 R2 B"
 		}, {
 			scramble: "L2 U2 B2 R2 D2 B2 F' D2 F R2 F2 R' F L' D U' F L F R'"
+		}, {
+			scramble: "[[L, D']:U']"
 		}, {
 			scramble: Cube.allMoves().join(' ')
 		}]
