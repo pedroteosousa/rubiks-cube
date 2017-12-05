@@ -1,7 +1,7 @@
 const assert = require('chai').assert
 const Cube = require('../cube')
 
-describe('Tests for cube.js', function () {
+describe('Testing cube functions', function () {
 	it('Testing constructos', function () {
 		for (var i = 0; i < 20; i++) {
 			var cube, random = Cube.random()
@@ -14,6 +14,17 @@ describe('Tests for cube.js', function () {
 			cube = Cube.identity()
 			assert.deepEqual(cube.isSolved(), true, 'Cube.identity() not working')
 		}
+		// testing scramble 'constructor'
+		var tests = [{
+			scramble: "D' R' F L' D2 F U' D' L U' F R2 B' D2 F' R2 U2 B' D2 R2 B",
+			solve: "y2 R F' Rw' U B F U M U' M' U2 Rw' U' Rw R U Rw' U Rw U' Rw' U' R' U2 R U R' U R U' R U R' F' R U R' U' R' F R2 U' R' M' U M U M' U' M U2 M U' M2 U2 M' U2 M' L2"
+		}, {
+			scramble: "L2 U2 B2 R2 D2 B2 F' D2 F R2 F2 R' F L' D U' F L F R'",
+			solve: "z2 R2 U R F Rw' F U2 R B' U' M2 U R2 U' R' U2 R U M U M' R U2 L' B' L U' L U2 L' U' L U' L' U' R U R' F' R U R' U' R' F R2 U' R' M' U2 M U M' U2"
+		}]
+		for (var i in tests) {
+			assert.equal(Cube.scramble(tests[i].scramble).scramble(tests[i].solve).isSolved(), true, "scramble 'constructor' not working")
+		}
 	})
 	it('Testing cubie and coordinate functions', function () {
 		for (var i = 0; i < 20; i++) {
@@ -25,21 +36,16 @@ describe('Tests for cube.js', function () {
 	it('Testing moves and simple hash function', function () {
 		var tests = [{
 			scramble: "D' R' F L' D2 F U' D' L U' F R2 B' D2 F' R2 U2 B' D2 R2 B",
-			inverse: "B' R2 D2 B U2 R2 F D2 B R2 F' U L' D U F' D2 L F' R D",
 			solve: "y2 R F' Rw' U B F U M U' M' U2 Rw' U' Rw R U Rw' U Rw U' Rw' U' R' U2 R U R' U R U' R U R' F' R U R' U' R' F R2 U' R' M' U M U M' U' M U2 M U' M2 U2 M' U2 M' L2"
 		}, {
 			scramble: "L2 U2 B2 R2 D2 B2 F' D2 F R2 F2 R' F L' D U' F L F R'",
-			inverse: "R F' L' F' U D' L F' R F2 R2 F' D2 F B2 D2 R2 B2 U2 L2",
 			solve: "z2 R2 U R F Rw' F U2 R B' U' M2 U R2 U' R' U2 R U M U M' R U2 L' B' L U' L U2 L' U' L U' L' U' R U R' F' R U R' U' R' F R2 U' R' M' U2 M U M' U2"
 		}]
 		for (var i in tests) {
 			var identity = new Cube ()
 			var cube = new Cube ()
 			cube.scramble(tests[i].scramble + " " + tests[i].solve)
-			cube.orient()
-			assert.equal(cube.hash(), identity.hash(), "test " + i + ": scramble + solve")
-			cube.scramble(tests[i].inverse + " " + tests[i].scramble)
-			assert.equal(cube.isSolved(), true, "test " + i + ": inverse + scramble")
+			assert.equal(cube.orient().hash(), identity.hash(), "test " + i + ": scramble + solve")
 		}
 	})
 	it('Testing multiply function', function () {
@@ -49,6 +55,9 @@ describe('Tests for cube.js', function () {
 		}, {
 			scramble: "R U'",
 			times: 63
+		}, {
+			scramble: "[[L, D']:U']",
+			times: 3
 		}]
 		for (var i in tests) {
 			var cube = new Cube ()
@@ -56,6 +65,23 @@ describe('Tests for cube.js', function () {
 				cube.scramble(tests[i].scramble)
 			}
 			assert.equal(cube.isSolved(), true, "test " + i + ": did not cycle in time")
+		}
+	})
+	it('Testing inverse function', function () {
+		var tests = [{
+			scramble: "F"
+		}, {
+			scramble: "D' R' F L' D2 F U' D' L U' F R2 B' D2 F' R2 U2 B' D2 R2 B"
+		}, {
+			scramble: "L2 U2 B2 R2 D2 B2 F' D2 F R2 F2 R' F L' D U' F L F R'"
+		}]
+		for (var i in tests) {
+			var cube = Cube.scramble(tests[i].scramble)
+			assert.equal(cube.multiply(cube.inverse()).isSolved(), true, "generated cube is not the inverse of original")
+		}
+		for (var i = 0; i < 20; i++) {
+			var cube = Cube.random()
+			assert.equal(cube.multiply(cube.inverse()).isSolved(), true, "generated cube is not hte inverse of original")
 		}
 	})
 	it('Testing hash function with arguments', function () {
@@ -77,9 +103,8 @@ describe('Tests for cube.js', function () {
 			orien_options: {}
 		}]
 		for (var i in tests) {
-			var cube = Cube.identity()
-			cube.scramble(tests[i].scramble)
-			assert(cube.hash(tests[i].perm_options, tests[i].orien_options) == Cube.identity().hash(tests[i].perm_options, tests[i].orien_options), true, "test " + i + ": cubes did not match")
+			assert(Cube.scramble(tests[i].scramble).hash(tests[i].perm_options, tests[i].orien_options) 
+				== Cube.identity().hash(tests[i].perm_options, tests[i].orien_options), true, "test " + i + ": cubes did not match")
 		}
 	})
 	it('Testing parity', function () {
@@ -106,19 +131,28 @@ describe('Tests for cube.js', function () {
 		assert.notEqual(odd, num_tests, "no even parity cases generated in random()")
 	})
 	it('Testing README.md examples', function () {
-		var multi = new Cube ()
-		multi.scramble("R U L D")
 
+		/* ----------------- CONSTRUCTORS --------------------- */
+		// default constructor (creates a solved cube)
 		var cube = new Cube ()
 
-		var count = 0;
-		do {
-			cube.multiply(multi)
-		    count++;
-		} while (!cube.isSolved())
+		// copy constructor
+		var copy = new Cube (cube)
 
-		assert.equal(count, 315, "cycle did not match expected size")
-	
+		// hash constructor
+		var hash = new Cube (cube.hash())
+
+		// creates a solved cube
+		cube = Cube.identity()
+
+		// creates a cube in a random state
+		var random = Cube.random()
+
+		// creates a cube from a scramble
+		var scramble = Cube.scramble("M u2 M' y M2 U2 R2 U2 R2 U2")
+
+		/* ----------------- APPLYING MOVES AND COMPARING --------------------- */
+
 		var cube1 = new Cube ()
 		var cube2 = new Cube ()
 
@@ -142,10 +176,49 @@ describe('Tests for cube.js', function () {
 		// but you can use the orient() function to put the cube back in WCA orientation and then compare it
 		cube.orient()
 		assert.equal(cube.hash() == Cube.identity().hash(), true, "oriented cube should have the same hash as identity") // true
+		
+		/* ----------------- MULTIPLY FUNCTION --------------------- */
+
+		var multi = new Cube ()
+		multi.scramble("R U L D")
+
+		cube = new Cube ()
+
+		var count = 0;
+		do {
+			cube.multiply(multi)
+		    count++;
+		} while (!cube.isSolved())
+
+		assert.equal(count, 315, "cycle did not match expected size")
+	
+		/* ----------------- SCRAMBLES --------------------- */
+
+		// commutators for PC and CP (speffz with UBL as buffer)
+		var PC = Cube.scramble("[ [R' , D'] : U2]")
+		var CP = Cube.scramble("[U , [U2: L D' L']]")
+
+		assert.equal(PC.multiply(CP).isSolved(), true, "PC and CP did not cancel each other") // true
+
+		/* ----------------- INVERSE FUNCTION --------------------- */
+
+		cube = Cube.random()
+		// Get the inverse state of a cube
+		var inverse = cube.inverse()
+
+		assert.equal(cube.multiply(inverse).isSolved(), true, "inverse did not solve the cube") // true
+
+		// Or you can use the class inverse function, which also works for scrambles
+		cube = Cube.random()
+		assert.equal(cube.multiply(Cube.inverse(cube)).isSolved(), true, "class inverse did not solve the cube") // true
+
+		var scramble = "M' x' Rw2 B"
+		assert.deepEqual(Cube.inverse(scramble), "B' Rw2 x M", "wrong inverse scramble") // B' Rw2 x M
+
+		/* ----------------- COMPLEX USES OF HASH FUNCTION --------------------- */
 
 		// this algorithm flips two corners (UBL and UFL) in place
-		cube = Cube.identity()
-		cube.scramble("R U R' U R U2 R' L' U' L U' L' U2 L")
+		cube = Cube.scramble("R U R' U R U2 R' L' U' L U' L' U2 L")
 		assert.equal(cube.hash() == Cube.identity().hash(), false, "cube should not be solved") // false
 
 		var options = {
@@ -158,11 +231,12 @@ describe('Tests for cube.js', function () {
 		// we need to send '{}' to the orientations options, otherwise, it would consider orientations of all pieces
 
 		// like wise, for the orientation:
-		cube = Cube.identity()
-		cube.scramble('U')
+		cube = Cube.scramble('U')
 		// note that the only moves that affect orientation of pieces are F, B and slice moves
 
 		assert.equal(cube.hash() == Cube.identity().hash(), false, "hash without options should be different") // false
 		assert.equal(cube.hash({}, undefined) == Cube.identity().hash({}, undefined), true, "hash with options should be the same") // true
+
+
 	})
 })
