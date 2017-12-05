@@ -2,7 +2,7 @@
 [![Build Status](https://travis-ci.org/pedroteosousa/rubiks-cube.svg?branch=master)](https://travis-ci.org/pedroteosousa/rubiks-cube)
 [![npm version](https://badge.fury.io/js/rubiks-cube.svg)](https://badge.fury.io/js/rubiks-cube)
 
-Simple JavaScript modeling of a 3x3x3 Rubik's Cube.
+A simple JavaScript modeling of a 3x3x3 Rubik's Cube.
 
 ## Installing
 ```{r, engine='bash', count_lines}
@@ -37,6 +37,9 @@ var cube = Cube.identity()
 
 // creates a cube in a random state
 var random = Cube.random()
+
+// creates a cube from a scramble
+var scramble = Cube.scramble("M u2 M' y M2 U2 R2 U2 R2 U2")
 ```
 
 ### Applying moves and comparing
@@ -77,8 +80,7 @@ This function does the equivalent of applying the scramble of a cube into anothe
 ```javascript
 const Cube = require('rubiks-cube')
 
-var multi = new Cube ()
-multi.scramble("R U L D")
+var multi = Cube.scramble("R U L D")
 
 var cube = new Cube ()
 
@@ -89,20 +91,44 @@ do {
 } while (!cube.isSolved())
 
 console.log(count) // 315
-
-// you can do it without a scramble too
-multi = Cube.random()
-cube = new Cube ()
-count = 0;
-do {
-	cube.multiply(multi)
-    count++;
-} while (!cube.isSolved())
-
-console.log(count) // I have no idea, but you can try (:
 ```
 
 You can use this to apply a long algorithm if you are using it frequently, because it's a lot faster, or if you have the cube but not the actual scramble (like in the example of the random cube)
+
+#### Scrambles
+
+The program accepts a bit more complex scrambles, like commutators (`[A:B] = A B A' B'`) and conjugates (`[A,B] = A B A'`).
+
+```javascript
+const Cube = require('rubiks-cube')
+
+// commutators for PC and CP (speffz with UBL as buffer)
+var PC = Cube.scramble("[ [R' , D'] : U2]")
+var CP = Cube.scramble("[U , [U2: L D' L']]")
+
+console.log(PC.multiply(CP).isSolved()) // true
+```
+
+#### Inverse function
+
+This function finds the inverse state of a cube or the inverse of a scramble
+
+```javascript
+const Cube = require('rubiks-cube')
+
+var cube = Cube.random()
+// Get the inverse state of a cube
+var inverse = cube.inverse()
+
+console.log(cube.multiply(inverse).isSolved()) // true
+
+// Or you can use the class inverse function, which also works for scrambles
+cube = Cube.random()
+console.log(cube.multiply(Cube.inverse(cube)).isSolved()) // true
+
+var scramble = "M' x' Rw2 B"
+console.log(Cube.inverse(scramble)) // B' Rw2 x M
+```
 
 #### More complex uses of the hash function:
 	
@@ -115,8 +141,7 @@ Sending `undefined` in any of the two arguments causes the hash function to cons
 const Cube = require('rubiks-cube')
 
 // this algorithm flips two corners (UBL and UFL) in place
-var cube = Cube.identity()
-cube.scramble("R U R' U R U2 R' L' U' L U' L' U2 L")
+var cube = Cube.scramble("R U R' U R U2 R' L' U' L U' L' U2 L")
 console.log(cube.hash() == Cube.identity().hash()) // false
 
 var options = {
@@ -126,16 +151,16 @@ var options = {
 } // you could have just the 'corners' field here, but the others are included for reference
 
 console.log(cube.hash(options, {}) == Cube.identity().hash(options, {})) // true
-// we need to send '{}' to the orientations options, otherwise, it would consider orientations
-// of all pieces
+/* we need to send '{}' to the orientations options, otherwise, it would consider orientations
+   of all pieces */
 
 // like wise, for the orientation:
-cube = Cube.identity()
-cube.scramble('U')
+cube = Cube.scramble('U')
 // U and D do not affect the orientation of any piece 
 
 console.log(cube.hash() == Cube.identity().hash()) // false
 console.log(cube.hash({}, undefined) == Cube.identity().hash({}, undefined)) // true
+// returns true because we are considering orientations of all pieces, but permutations of none
 ```
 
 A bit of information is lost while doing this, so the hash function can only be used in a constructor if it received no arguments (or both arguments `undefined`).
