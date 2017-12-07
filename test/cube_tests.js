@@ -59,13 +59,23 @@ describe('Testing cube functions', function () {
 			scramble: "[[L, D']:U']",
 			times: 3
 		}]
+		// testing multiply function with one argument
 		for (var i in tests) {
+			var multiCube = Cube.scramble(tests[i].scramble)
 			var cube = new Cube ()
-			while (tests[i].times--) {
-				cube.scramble(tests[i].scramble)
+			for (var j = 0; j < tests[i].times; j++) {
+				cube.multiply(multiCube)
 			}
 			assert.equal(cube.isSolved(), true, "test " + i + ": did not cycle in time")
 		}
+		// testing multiply function with two arguments
+		for (var i in tests) {
+			var multiCube = Cube.scramble(tests[i].scramble)
+			var cube = new Cube(multiCube)
+			assert.equal(cube.isSolved(), false, "test " + i + ": cube was solved from the beginning")
+			cube.multiply(multiCube, tests[i].times-1)
+			assert.equal(cube.isSolved(), true, "test " + i + ": did not cycle in expected time")
+		}//*/
 	})
 	it('Testing inverse function', function () {
 		var tests = [{

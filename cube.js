@@ -279,19 +279,29 @@ class Cube {
 		return this
 	}
 	// Multiply a cube by another
-	multiply(cube_info) {
-		var cube = new Cube (cube_info)
-		var temp = new Cube (this)
-		for (var i in cube.ep) {
-			this.ep[i] = temp.ep[cube.ep[i]]
-			this.eo[i] = (temp.eo[cube.ep[i]] + cube.eo[i])%2
-		}
-		for (var i in cube.cp) {
-			this.cp[i] = temp.cp[cube.cp[i]]
-			this.co[i] = (temp.co[cube.cp[i]] + cube.co[i])%3
-		}
-		for (var i in cube.c) {
-			this.c[i] = temp.c[cube.c[i]]
+	multiply(cube_info, times = 1) {
+		if (times < 1) return this
+
+		if (times == 1) {
+			var cube = new Cube (cube_info)
+			var temp = new Cube (this)
+			for (var i in cube.ep) {
+				this.ep[i] = temp.ep[cube.ep[i]]
+				this.eo[i] = (temp.eo[cube.ep[i]] + cube.eo[i])%2
+			}
+			for (var i in cube.cp) {
+				this.cp[i] = temp.cp[cube.cp[i]]
+				this.co[i] = (temp.co[cube.cp[i]] + cube.co[i])%3
+			}
+			for (var i in cube.c) {
+				this.c[i] = temp.c[cube.c[i]]
+			}
+		} else {
+			var temp = Cube.identity()
+			temp.multiply(cube_info, parseInt(times/2))
+			this.multiply(temp)
+			this.multiply(temp)
+			if (times % 2) this.multiply(cube_info)
 		}
 		return this
 	}
