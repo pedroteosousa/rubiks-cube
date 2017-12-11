@@ -6,7 +6,7 @@ A simple JavaScript modeling of a 3x3x3 Rubik's Cube.
 
 ## Documentation
 
-Check the documentations of this package at the [wiki page](https://github.com/pedroteosousa/rubiks-cube/wiki).
+Check the documentation of this package at the [wiki page](https://github.com/pedroteosousa/rubiks-cube/wiki).
 
 ## License
 
