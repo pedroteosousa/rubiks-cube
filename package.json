@@ -1,6 +1,6 @@
 {
   "name": "rubiks-cube",
-  "version": "2.3.3",
+  "version": "2.3.4",
   "description": "Simple JavaScript modeling of a 3x3x3 Rubik's Cube.",
   "main": "cube.js",
   "scripts": {
