@@ -56,7 +56,7 @@ describe('Testing cube functions', function () {
 			scramble: "R U'",
 			times: 63
 		}, {
-			scramble: "[[L, D']:U']",
+			scramble: "[[L, D'],U']",
 			times: 3
 		}]
 		// testing multiply function with one argument
@@ -205,8 +205,8 @@ describe('Testing cube functions', function () {
 		/* ----------------- SCRAMBLES --------------------- */
 
 		// commutators for PC and CP (speffz with UBL as buffer)
-		var PC = Cube.scramble("[ [R' , D'] : U2]")
-		var CP = Cube.scramble("[U , [U2: L D' L']]")
+		var PC = Cube.scramble("[ [R' : D'] , U2]")
+		var CP = Cube.scramble("[U : [U2, L D' L']]")
 
 		assert.equal(PC.multiply(CP).isSolved(), true, "PC and CP did not cancel each other") // true
 

@@ -196,20 +196,20 @@ class Cube {
 
 		var parseCommutator = (commutator) => {
 			commutator = commutator.slice(1, commutator.length-1)
-			var steps = commutator.split(":")
+			var steps = commutator.split(",")
 			commutator = steps[0] + " " + steps[1] + " " + Cube.inverse(steps[0]) + " " + Cube.inverse(steps[1])
 			return commutator
 		}
 
 		var parseConjugate = (conjugate) => {
 			conjugate = conjugate.slice(1, conjugate.length-1)
-			var steps = conjugate.split(",")
+			var steps = conjugate.split(":")
 			conjugate = steps[0] + " " + steps[1] + " " + Cube.inverse(steps[0])
 			return conjugate
 		}
 
-		var commutator = /\[[A-Za-z0-9' ]+:[A-Za-z0-9' ]+\]/g
-		var conjugate = /\[[A-Za-z0-9' ]+,[A-Za-z0-9' ]+\]/g
+		var commutator = /\[[A-Za-z0-9' ]+,[A-Za-z0-9' ]+\]/g
+		var conjugate = /\[[A-Za-z0-9' ]+:[A-Za-z0-9' ]+\]/g
 		do {
 			var commutators = scramble.match(commutator)
 			for (var i in commutators) {
