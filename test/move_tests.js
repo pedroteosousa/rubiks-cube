@@ -23,7 +23,7 @@ describe('Testing scramble functions', function () {
 		for (var i in tests) {
 			var cube = new Cube ()
 			cube.scramble(tests[i].scramble)
-			cube.scramble(Cube.inverse(tests[i].scramble))
+			cube.scramble(Cube.Scramble.inverse(tests[i].scramble))
 			assert.equal(cube.isSolved(), true, "inverse scramble did not solve the cube")
 		}
 	})
