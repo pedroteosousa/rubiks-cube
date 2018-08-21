@@ -24,12 +24,15 @@ class Scramble {
       const info = Scramble._special(scramble)
       const left = Scramble._joinTokens(info.leftTokens)
       const right = Scramble._joinTokens(info.rightTokens)
-      if (info.type === ',') { return [left, right, Scramble.inverse(left), Scramble.inverse(right)].join(' ') } else if (info.type === ':') { return [left, right, Scramble.inverse(left)].join(' ') } else { return left }
+      if (info.type === ',') return [left, right, Scramble.inverse(left), Scramble.inverse(right)].join(' ')
+      else if (info.type === ':') return [left, right, Scramble.inverse(left)].join(' ')
+      else return left
     }
     const applyModifiers = function (token) {
       const modifiers = parseModifiers(token.modifiers)
       let moves = token.moves
-      if ('({'.indexOf(moves[0]) !== -1) { moves = Scramble.parse(moves.substring(1, moves.length - 1)) } else if ('['.indexOf(moves[0]) !== -1) {
+      if ('({'.indexOf(moves[0]) !== -1) moves = Scramble.parse(moves.substring(1, moves.length - 1))
+      else if ('['.indexOf(moves[0]) !== -1) {
         moves = Scramble.parse(parseSpecial(moves))
       }
       for (const i in modifiers) {
@@ -49,7 +52,8 @@ class Scramble {
     // invert commutators and conjugates
     const inverseSpecial = function (scramble) {
       const info = Scramble._special(scramble)
-      if (info.type === ',') { return '[' + Scramble._joinTokens(info.rightTokens) + ', ' + Scramble._joinTokens(info.leftTokens) + ']' } else if (info.type === ':') { return '[' + Scramble._joinTokens(info.leftTokens) + ': ' + Scramble.inverse(Scramble._joinTokens(info.rightTokens)) + ']' }
+      if (info.type === ',') return '[' + Scramble._joinTokens(info.rightTokens) + ', ' + Scramble._joinTokens(info.leftTokens) + ']'
+      else if (info.type === ':') return '[' + Scramble._joinTokens(info.leftTokens) + ': ' + Scramble.inverse(Scramble._joinTokens(info.rightTokens)) + ']'
       return scramble
     }
     const inverseToken = function (token) {
