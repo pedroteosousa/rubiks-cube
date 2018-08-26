@@ -21,6 +21,9 @@ describe('Testing cube functions', function () {
 		}, {
 			scramble: "L2 U2 B2 R2 D2 B2 F' D2 F R2 F2 R' F L' D U' F L F R'",
 			solve: "z2 R2 U R F Rw' F U2 R B' U' M2 U R2 U' R' U2 R U M U M' R U2 L' B' L U' L U2 L' U' L U' L' U' R U R' F' R U R' U' R' F R2 U' R' M' U2 M U M' U2"
+		}, {
+			scramble: "x",
+			solve: "x3"
 		}]
 		for (var i in tests) {
 			assert.equal(Cube.scramble(tests[i].scramble).scramble(tests[i].solve).isSolved(), true, "scramble 'constructor' not working")
@@ -40,6 +43,12 @@ describe('Testing cube functions', function () {
 		}, {
 			scramble: "L2 U2 B2 R2 D2 B2 F' D2 F R2 F2 R' F L' D U' F L F R'",
 			solve: "z2 R2 U R F Rw' F U2 R B' U' M2 U R2 U' R' U2 R U M U M' R U2 L' B' L U' L U2 L' U' L U' L' U' R U R' F' R U R' U' R' F R2 U' R' M' U2 M U M' U2"
+		}, {
+			scramble: "(R U')63",
+			solve: ""
+		}, {
+			scramble: "R2 L' ([Rw: [R L2; R']])2'3'' [R, L]",
+			solve: "(R2 L' ([Rw: [R L2; R']])2'3'' [R, L])'"
 		}]
 		for (var i in tests) {
 			var identity = new Cube ()
